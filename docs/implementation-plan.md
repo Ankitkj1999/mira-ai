@@ -372,10 +372,14 @@ const embedding = await embeddingService.generateEmbedding(description);
 ## 💻 Phase 5: Frontend Development (After Backend is Complete)
 
 ### Step 5.0: Frontend Setup
-- [ ] Install React/Vite dependencies (if not already done)
+- [ ] Install React/Vite dependencies
   ```bash
   npm install react react-dom
   npm install --save-dev @vitejs/plugin-react
+  ```
+- [ ] Initialize Shadcn UI
+  ```bash
+  npx shadcn-ui@latest init
   ```
 - [ ] Create frontend folder structure
 - [ ] Configure Vite to proxy API requests to backend
@@ -410,6 +414,7 @@ const embedding = await embeddingService.generateEmbedding(description);
   - Comparison selection (client-side only)
 
 ### Step 5.4: UI/UX Polish
+- [ ] Implement beautiful and simple UI using Shadcn UI components.
 - [ ] Responsive design (mobile-first)
 - [ ] Loading skeletons
 - [ ] Error messages
