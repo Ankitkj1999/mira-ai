@@ -1,0 +1,212 @@
+[
+  {
+    "id": 1,
+    "bedrooms": 3,
+    "bathrooms": 2,
+    "size_sqft": 1500,
+    "amenities": ["Gym", "Swimming Pool", "Parking"]
+  },
+  {
+    "id": 2,
+    "bedrooms": 2,
+    "bathrooms": 2,
+    "size_sqft": 1200,
+    "amenities": ["Beach Access", "Security", "Balcony"]
+  },
+  {
+    "id": 3,
+    "bedrooms": 4,
+    "bathrooms": 3,
+    "size_sqft": 2800,
+    "amenities": ["Private Garden", "Smart Home", "Garage"]
+  },
+  {
+    "id": 4,
+    "bedrooms": 1,
+    "bathrooms": 1,
+    "size_sqft": 800,
+    "amenities": ["Gym", "Laundry", "Security"]
+  },
+  {
+    "id": 5,
+    "bedrooms": 5,
+    "bathrooms": 4,
+    "size_sqft": 3500,
+    "amenities": ["Rooftop Terrace", "Smart Security", "Private Elevator"]
+  },
+  {
+    "id": 6,
+    "bedrooms": 1,
+    "bathrooms": 1,
+    "size_sqft": 600,
+    "amenities": ["Park View", "24/7 Concierge", "Fitness Center"]
+  },
+  {
+    "id": 7,
+    "bedrooms": 3,
+    "bathrooms": 2,
+    "size_sqft": 2000,
+    "amenities": ["Private Dock", "Boat Parking", "BBQ Area"]
+  },
+  {
+    "id": 8,
+    "bedrooms": 3,
+    "bathrooms": 3,
+    "size_sqft": 1800,
+    "amenities": ["Backyard", "Community Pool", "Pet Friendly"]
+  },
+  {
+    "id": 9,
+    "bedrooms": 4,
+    "bathrooms": 3,
+    "size_sqft": 2500,
+    "amenities": ["Home Office", "Solar Panels", "Two-Car Garage"]
+  },
+  {
+    "id": 10,
+    "bedrooms": 3,
+    "bathrooms": 2,
+    "size_sqft": 1900,
+    "amenities": ["Minimalist Design", "Smart Appliances", "Energy Efficient"]
+  },
+  {
+    "id": 11,
+    "bedrooms": 5,
+    "bathrooms": 4,
+    "size_sqft": 4200,
+    "amenities": ["Infinity Pool", "Oceanfront", "Wine Cellar", "Home Theater"]
+  },
+  {
+    "id": 12,
+    "bedrooms": 3,
+    "bathrooms": 3,
+    "size_sqft": 2200,
+    "amenities": ["Exposed Brick", "Rooftop Deck", "Walk-in Closet", "Central AC"]
+  },
+  {
+    "id": 13,
+    "bedrooms": 6,
+    "bathrooms": 5,
+    "size_sqft": 5100,
+    "amenities": ["Ski-in/Ski-out", "Hot Tub", "Fireplace", "Heated Floors"]
+  },
+  {
+    "id": 14,
+    "bedrooms": 2,
+    "bathrooms": 2,
+    "size_sqft": 1400,
+    "amenities": ["Co-working Space", "EV Charging", "Bike Storage", "Package Room"]
+  },
+  {
+    "id": 15,
+    "bedrooms": 3,
+    "bathrooms": 3,
+    "size_sqft": 2100,
+    "amenities": ["Private Boat Slip", "Marina View", "Outdoor Kitchen", "Gated Entry"]
+  },
+  {
+    "id": 16,
+    "bedrooms": 7,
+    "bathrooms": 6,
+    "size_sqft": 6800,
+    "amenities": ["Tennis Court", "Guest House", "Golf Simulator", "Security System"]
+  },
+  {
+    "id": 17,
+    "bedrooms": 4,
+    "bathrooms": 4,
+    "size_sqft": 3300,
+    "amenities": ["360° City View", "Private Terrace", "Chef's Kitchen", "Concierge"]
+  },
+  {
+    "id": 18,
+    "bedrooms": 3,
+    "bathrooms": 2,
+    "size_sqft": 1700,
+    "amenities": ["Rainwater Harvesting", "Solar Roof", "Compost Area", "Native Garden"]
+  },
+  {
+    "id": 19,
+    "bedrooms": 3,
+    "bathrooms": 3,
+    "size_sqft": 2400,
+    "amenities": ["Corner Unit", "Floor-to-Ceiling Windows", "Valet Parking", "Spa"]
+  },
+  {
+    "id": 20,
+    "bedrooms": 4,
+    "bathrooms": 3,
+    "size_sqft": 2900,
+    "amenities": ["Fenced Yard", "In-ground Pool", "Playroom", "Mudroom"]
+  },
+  {
+    "id": 21,
+    "bedrooms": 1,
+    "bathrooms": 1,
+    "size_sqft": 550,
+    "amenities": ["Furnished", "Smart Lock", "High-speed WiFi", "Rooftop Lounge"]
+  },
+  {
+    "id": 22,
+    "bedrooms": 8,
+    "bathrooms": 7,
+    "size_sqft": 9500,
+    "amenities": ["Putting Green", "Helipad", "Staff Quarters", "Panic Room"]
+  },
+  {
+    "id": 23,
+    "bedrooms": 4,
+    "bathrooms": 3,
+    "size_sqft": 2600,
+    "amenities": ["Original Hardwood", "Fire Pit", "Outdoor Shower", "Desert Landscaping"]
+  },
+  {
+    "id": 24,
+    "bedrooms": 2,
+    "bathrooms": 2,
+    "size_sqft": 1300,
+    "amenities": ["River View", "Kayak Storage", "Community Garden", "Pet Spa"]
+  },
+  {
+    "id": 25,
+    "bedrooms": 3,
+    "bathrooms": 3,
+    "size_sqft": 2000,
+    "amenities": ["Tesla Powerwall", "Level 2 Charger", "Home Automation", "Ring System"]
+  },
+  {
+    "id": 26,
+    "bedrooms": 9,
+    "bathrooms": 8,
+    "size_sqft": 11200,
+    "amenities": ["Recording Studio", "Barn", "Orchard", "Horse Stables"]
+  },
+  {
+    "id": 27,
+    "bedrooms": 4,
+    "bathrooms": 3,
+    "size_sqft": 2700,
+    "amenities": ["Koi Pond", "Meditation Room", "Sauna", "Bamboo Flooring"]
+  },
+  {
+    "id": 28,
+    "bedrooms": 2,
+    "bathrooms": 2,
+    "size_sqft": 1100,
+    "amenities": ["Lake Access", "Fireplace", "Wraparound Deck", "Wood Stove"]
+  },
+  {
+    "id": 29,
+    "bedrooms": 4,
+    "bathrooms": 3,
+    "size_sqft": 3100,
+    "amenities": ["Never Lived In", "Open Floor Plan", "Quartz Counters", "Tankless Water Heater"]
+  },
+  {
+    "id": 30,
+    "bedrooms": 5,
+    "bathrooms": 6,
+    "size_sqft": 5800,
+    "amenities": ["Casino Room", "Indoor Pool", "Sky Garage", "360° Balcony"]
+  }
+]

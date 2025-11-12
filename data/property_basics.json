@@ -1,0 +1,182 @@
+[
+  {
+    "id": 1,
+    "title": "3 BHK Apartment in Downtown",
+    "price": 450000,
+    "location": "New York, NY"
+  },
+  {
+    "id": 2,
+    "title": "2 BHK Condo with Sea View",
+    "price": 380000,
+    "location": "Miami, FL"
+  },
+  {
+    "id": 3,
+    "title": "Luxury Villa with Private Garden",
+    "price": 850000,
+    "location": "Los Angeles, CA"
+  },
+  {
+    "id": 4,
+    "title": "1 BHK Budget Apartment",
+    "price": 250000,
+    "location": "Austin, TX"
+  },
+  {
+    "id": 5,
+    "title": "Penthouse with Skyline View",
+    "price": 1200000,
+    "location": "San Francisco, CA"
+  },
+  {
+    "id": 6,
+    "title": "Cozy Studio in Central Park",
+    "price": 300000,
+    "location": "New York, NY"
+  },
+  {
+    "id": 7,
+    "title": "Lakefront House with Dock",
+    "price": 750000,
+    "location": "Chicago, IL"
+  },
+  {
+    "id": 8,
+    "title": "Modern Townhouse with Backyard",
+    "price": 600000,
+    "location": "Dallas, TX"
+  },
+  {
+    "id": 9,
+    "title": "4 BHK Duplex with Home Office",
+    "price": 920000,
+    "location": "Seattle, WA"
+  },
+  {
+    "id": 10,
+    "title": "Minimalist Smart Home",
+    "price": 700000,
+    "location": "Boston, MA"
+  },
+  {
+    "id": 11,
+    "title": "Beachfront Bungalow with Infinity Pool",
+    "price": 1450000,
+    "location": "Malibu, CA"
+  },
+  {
+    "id": 12,
+    "title": "Historic Brownstone Renovated",
+    "price": 1100000,
+    "location": "Brooklyn, NY"
+  },
+  {
+    "id": 13,
+    "title": "Mountain View Chalet 5 BHK",
+    "price": 980000,
+    "location": "Aspen, CO"
+  },
+  {
+    "id": 14,
+    "title": "Brand New Loft in Tech District",
+    "price": 680000,
+    "location": "San Jose, CA"
+  },
+  {
+    "id": 15,
+    "title": "Waterfront Condo with Boat Slip",
+    "price": 890000,
+    "location": "Fort Lauderdale, FL"
+  },
+  {
+    "id": 16,
+    "title": "Gated Community Villa 6 BHK",
+    "price": 1350000,
+    "location": "Scottsdale, AZ"
+  },
+  {
+    "id": 17,
+    "title": "Rooftop Terrace Penthouse",
+    "price": 2100000,
+    "location": "Chicago, IL"
+  },
+  {
+    "id": 18,
+    "title": "Eco-Friendly Solar Powered Home",
+    "price": 570000,
+    "location": "Portland, OR"
+  },
+  {
+    "id": 19,
+    "title": "Luxury High-Rise 3 BHK Corner Unit",
+    "price": 950000,
+    "location": "Atlanta, GA"
+  },
+  {
+    "id": 20,
+    "title": "Suburban Family Home with Pool",
+    "price": 480000,
+    "location": "Charlotte, NC"
+  },
+  {
+    "id": 21,
+    "title": "Downtown Micro-Loft Fully Furnished",
+    "price": 320000,
+    "location": "Denver, CO"
+  },
+  {
+    "id": 22,
+    "title": "Golf Course Frontage Mansion",
+    "price": 2800000,
+    "location": "Palm Springs, CA"
+  },
+  {
+    "id": 23,
+    "title": "Renovated Mid-Century Modern",
+    "price": 820000,
+    "location": "Phoenix, AZ"
+  },
+  {
+    "id": 24,
+    "title": "River View Apartment 2 BHK",
+    "price": 540000,
+    "location": "Pittsburgh, PA"
+  },
+  {
+    "id": 25,
+    "title": "Smart Townhome with EV Charging",
+    "price": 650000,
+    "location": "Raleigh, NC"
+  },
+  {
+    "id": 26,
+    "title": "Private Estate with Guest House",
+    "price": 3200000,
+    "location": "Nashville, TN"
+  },
+  {
+    "id": 27,
+    "title": "Urban Oasis with Zen Garden",
+    "price": 760000,
+    "location": "Washington, DC"
+  },
+  {
+    "id": 28,
+    "title": "Lake House Cabin Retreat",
+    "price": 420000,
+    "location": "Minneapolis, MN"
+  },
+  {
+    "id": 29,
+    "title": "Brand New Construction 4 BHK",
+    "price": 720000,
+    "location": "Houston, TX"
+  },
+  {
+    "id": 30,
+    "title": "Sky Villa Duplex Penthouse",
+    "price": 3800000,
+    "location": "Las Vegas, NV"
+  }
+]
