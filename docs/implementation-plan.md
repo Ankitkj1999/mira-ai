@@ -36,25 +36,63 @@ Build an AI-powered Real Estate Chatbot using RAG (Retrieval Augmented Generatio
   - `PORT` ✅ (7070)
   - `NODE_ENV` ✅ (development)
 
-### Step 1.2: Backend Project Structure (Phase 1 Focus)
+### Step 1.2: Backend Project Structure ✅ COMPLETE
+
+**Service Files Explained:**
+
+**1. `embeddingService.js` - Vector Embedding Generator**
+```javascript
+// Purpose: Convert text to vector embeddings
+// Functions:
+// - initializeModel() - Load Xenova sentence-transformer model
+// - generateEmbedding(text) - Convert text to 384-dim vector
+// - batchGenerateEmbeddings(texts[]) - Process multiple texts
+// Used by: seedDatabase.js, ragService.js
+```
+
+**2. `ragService.js` - RAG (Retrieval Augmented Generation) Engine**
+```javascript
+// Purpose: Core AI logic - search + generate responses
+// Functions:
+// - vectorSearch(queryEmbedding, filters) - Find similar properties in MongoDB
+// - generateResponse(userQuery, properties) - Use Gemini to create natural response
+// - processUserMessage(message) - Main RAG pipeline:
+//   1. Convert user query to embedding
+//   2. Search MongoDB vector store
+//   3. Pass context to LLM
+//   4. Return AI response + property results
+// Used by: chat.js routes
+```
+
+**3. `propertyService.js` - Property Business Logic**
+```javascript
+// Purpose: Traditional filtering and data formatting
+// Functions:
+// - filterProperties(criteria) - Filter by price, location, bedrooms
+// - getPropertyById(id) - Fetch single property
+// - getAllProperties(pagination) - List all properties
+// - combineFilters(vectorResults, traditionalFilters) - Merge search methods
+// - formatPropertyForResponse(property) - Clean data for frontend
+// Used by: properties.js routes, ragService.js
+```
 ```
 mira-ai/
 ├── server/                 # Node.js backend (BUILD THIS FIRST)
 │   ├── config/
-│   │   ├── database.js
-│   │   └── swagger.js
+│   │   ├── database.js          # MongoDB connection setup
+│   │   └── swagger.js           # Swagger/OpenAPI configuration
 │   ├── models/
-│   │   └── Property.js
+│   │   └── Property.js          # Mongoose schema for properties
 │   ├── services/
-│   │   ├── embeddingService.js
-│   │   ├── ragService.js
-│   │   └── propertyService.js
+│   │   ├── embeddingService.js  # Generate vector embeddings using Xenova
+│   │   ├── ragService.js        # RAG logic: vector search + LLM response
+│   │   └── propertyService.js   # Business logic: filter, search properties
 │   ├── routes/
-│   │   ├── chat.js
-│   │   └── properties.js
+│   │   ├── chat.js              # Chat endpoints (POST /api/chat/message)
+│   │   └── properties.js        # Property endpoints (GET /api/properties)
 │   ├── middleware/
-│   │   └── errorHandler.js
-│   └── server.js
+│   │   └── errorHandler.js      # Global error handling
+│   └── server.js                # Express app entry point
 ├── data/                   # JSON data files
 │   ├── property_basics.json
 │   ├── property_characteristics.json
@@ -122,6 +160,19 @@ mira-ai/
   }
   ```
 
+**What MongoDB Atlas Does vs What We Do:**
+
+| Task | Who Does It |
+|------|-------------|
+| Create description text | **We do** (in seedDatabase.js) |
+| Generate vector embeddings | **We do** (using Xenova/embeddingService) |
+| Store vectors in database | **MongoDB stores** (just like any other field) |
+| Search vectors by similarity | **MongoDB Atlas Vector Search** (using the index) |
+| Convert user query to vector | **We do** (using embeddingService) |
+| Generate AI response | **We do** (using Gemini via LangChain) |
+
+**MongoDB Atlas Vector Search is just a specialized index** - like a regular text index, but for vectors!
+
 ---
 
 ## 🤖 Phase 3: AI/RAG Implementation
@@ -134,12 +185,56 @@ mira-ai/
   - Cache model for performance
 
 ### Step 3.2: Data Seeding with Embeddings
+
+**How Vectorization Works:**
+
+1. **We create the description text** (MongoDB doesn't do this):
+```javascript
+// Example for property ID 1:
+const description = `
+  ${title} - ${location}
+  Price: $${price}
+  ${bedrooms} bedrooms, ${bathrooms} bathrooms
+  Size: ${size_sqft} sqft
+  Amenities: ${amenities.join(', ')}
+`;
+// Result: "3 BHK Apartment in Downtown - New York, NY
+//          Price: $450000
+//          3 bedrooms, 2 bathrooms
+//          Size: 1500 sqft
+//          Amenities: Gym, Swimming Pool, Parking"
+```
+
+2. **We generate the embedding** using Xenova (MongoDB doesn't do this):
+```javascript
+const embedding = await embeddingService.generateEmbedding(description);
+// Result: [0.234, -0.123, 0.567, ..., 0.891] (384 numbers)
+```
+
+3. **We store both in MongoDB**:
+```javascript
+{
+  id: 1,
+  title: "3 BHK Apartment in Downtown",
+  price: 450000,
+  location: "New York, NY",
+  bedrooms: 3,
+  bathrooms: 2,
+  // ... other fields
+  description: "3 BHK Apartment in Downtown - New York, NY...", // The text we created
+  embedding: [0.234, -0.123, 0.567, ..., 0.891] // The vector we generated
+}
+```
+
+4. **MongoDB Atlas Vector Search** only searches the `embedding` field using cosine similarity
+
+**Implementation Steps:**
 - [ ] Create `scripts/seedDatabase.js`:
   - Read `property_basics.json`, `property_characteristics.json`, `property_images.json`
   - Merge all three files by matching `ID` field
-  - Generate description text from merged property data (e.g., "3 bedroom house in Miami for $450,000...")
-  - Create embeddings for each property description
-  - Insert merged properties with embeddings into MongoDB
+  - **Generate description text** from merged property data
+  - **Generate embeddings** using embeddingService for each description
+  - Insert merged properties with both description + embeddings into MongoDB
   - Log success/failure for each property
 
 ### Step 3.3: RAG Service with LangChain
