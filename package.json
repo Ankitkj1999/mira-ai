@@ -12,7 +12,8 @@
     "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
     "build": "vite build",
     "preview": "vite preview",
-    "start": "node server/server.js"
+    "start": "node server/server.js",
+    "seed": "node scripts/seedDatabase.js"
   },
   "keywords": [],
   "author": "",

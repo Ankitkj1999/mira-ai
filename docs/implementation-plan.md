@@ -130,25 +130,28 @@ mira-ai/
 
 ---
 
-## 🗄️ Phase 2: Database & Vector Store Setup
+## 🗄️ Phase 2: Database & Vector Store Setup ✅ MOSTLY COMPLETE
 
-### Step 2.1: MongoDB Atlas Configuration
-- [ ] Create MongoDB Atlas account/cluster
-- [ ] Enable MongoDB Atlas Vector Search
-- [ ] Create database: `mira_real_estate`
-- [ ] Create collection:
-  - `properties` (with vector search index)
+### Step 2.1: MongoDB Atlas Configuration ✅ COMPLETE
+- [x] Create MongoDB Atlas account/cluster (Already connected)
+- [x] MongoDB URI configured in .env
+- [ ] Create database: `mira_real_estate` (will be created automatically on first insert)
+- [ ] Create collection: `properties` (will be created by Mongoose)
+- [ ] Enable MongoDB Atlas Vector Search index (after seeding data)
 
-### Step 2.2: Define Mongoose Schema
-- [ ] Create `Property` model with:
-  - Basic info (title, price, location)
-  - Characteristics (bedrooms, bathrooms, size, amenities)
-  - Images array
-  - `embedding` field (Array of Numbers for vector)
-  - `description` field (concatenated text for embedding)
+### Step 2.2: Define Mongoose Schema ✅ COMPLETE
+- [x] Created `Property` model with:
+  - Basic info (id, title, price, location) ✅
+  - Characteristics (bedrooms, bathrooms, size_sqft, amenities) ✅
+  - Image URL (image_url) ✅
+  - `embedding` field (Array of Numbers - 384 dimensions) ✅
+  - `description` field (concatenated text for embedding) ✅
+  - Indexes for vector search and traditional filtering ✅
 
 ### Step 2.3: Vector Search Index
 - [ ] Create Atlas Search index on `properties` collection
+  - See detailed instructions in `docs/mongodb-atlas-vector-index-setup.md`
+  - Index configuration:
   ```json
   {
     "fields": [{
@@ -159,6 +162,8 @@ mira-ai/
     }]
   }
   ```
+  - **Manual step required**: Must be done in MongoDB Atlas UI
+  - Takes 1-2 minutes to build after creation
 
 **What MongoDB Atlas Does vs What We Do:**
 
@@ -184,7 +189,7 @@ mira-ai/
   - Use model: `Xenova/all-MiniLM-L6-v2` (384 dimensions)
   - Cache model for performance
 
-### Step 3.2: Data Seeding with Embeddings
+### Step 3.2: Data Seeding with Embeddings ✅ COMPLETE
 
 **How Vectorization Works:**
 
