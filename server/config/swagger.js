@@ -29,6 +29,11 @@ const options = {
             bedrooms: { type: 'number', example: 3 },
             bathrooms: { type: 'number', example: 2 },
             size_sqft: { type: 'number', example: 1500 },
+            property_type: { 
+              type: 'string', 
+              example: 'Apartment',
+              enum: ['Apartment', 'Condo', 'Villa', 'House', 'Penthouse', 'Studio', 'Townhouse', 'Duplex', 'Loft', 'Bungalow', 'Brownstone', 'Chalet', 'Estate', 'Cabin', 'Mansion', 'Other']
+            },
             amenities: { type: 'array', items: { type: 'string' } },
             image_url: { type: 'string' },
             description: { type: 'string' },

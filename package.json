@@ -13,13 +13,16 @@
     "build": "vite build",
     "preview": "vite preview",
     "start": "node server/server.js",
-    "seed": "node scripts/seedDatabase.js"
+    "seed": "node scripts/seedDatabase.js",
+    "test:rag": "node scripts/testRAG.js",
+    "test:filter": "node scripts/testFiltering.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "@langchain/community": "^0.3.57",
     "@langchain/core": "^0.3.79",
     "@langchain/google-genai": "^0.1.12",

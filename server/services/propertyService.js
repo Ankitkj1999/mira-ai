@@ -51,18 +51,44 @@ const filterProperties = async (filters) => {
   try {
     const query = {};
 
+    // Price range filter
     if (filters.minPrice || filters.maxPrice) {
       query.price = {};
       if (filters.minPrice) query.price.$gte = filters.minPrice;
       if (filters.maxPrice) query.price.$lte = filters.maxPrice;
     }
 
+    // Bedrooms filter (exact match or minimum)
     if (filters.bedrooms) {
-      query.bedrooms = filters.bedrooms;
+      if (filters.minBedrooms) {
+        query.bedrooms = { $gte: filters.bedrooms };
+      } else {
+        query.bedrooms = filters.bedrooms;
+      }
     }
 
+    // Bathrooms filter (exact match or minimum)
+    if (filters.bathrooms) {
+      if (filters.minBathrooms) {
+        query.bathrooms = { $gte: filters.bathrooms };
+      } else {
+        query.bathrooms = filters.bathrooms;
+      }
+    }
+
+    // Location filter (case-insensitive partial match)
     if (filters.location) {
       query.location = { $regex: filters.location, $options: 'i' };
+    }
+
+    // Property type filter
+    if (filters.property_type) {
+      query.property_type = filters.property_type;
+    }
+
+    // Keyword search in title (uses text index)
+    if (filters.keyword) {
+      query.$text = { $search: filters.keyword };
     }
 
     const properties = await Property.find(query).select('-embedding');

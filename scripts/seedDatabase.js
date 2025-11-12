@@ -56,6 +56,36 @@ const mergePropertyData = () => {
 };
 
 /**
+ * Extract property type from title
+ */
+const extractPropertyType = (title) => {
+  const types = {
+    'Apartment': /apartment|bhk/i,
+    'Condo': /condo/i,
+    'Villa': /villa/i,
+    'House': /house/i,
+    'Penthouse': /penthouse/i,
+    'Studio': /studio/i,
+    'Townhouse': /townhouse/i,
+    'Duplex': /duplex/i,
+    'Loft': /loft/i,
+    'Bungalow': /bungalow/i,
+    'Brownstone': /brownstone/i,
+    'Chalet': /chalet/i,
+    'Estate': /estate/i,
+    'Cabin': /cabin/i,
+    'Mansion': /mansion/i,
+  };
+
+  for (const [type, regex] of Object.entries(types)) {
+    if (regex.test(title)) {
+      return type;
+    }
+  }
+  return 'Other';
+};
+
+/**
  * Generate description text for a property
  */
 const generateDescription = (property) => {
@@ -63,6 +93,7 @@ const generateDescription = (property) => {
 Price: $${property.price.toLocaleString()}
 ${property.bedrooms} bedrooms, ${property.bathrooms} bathrooms
 Size: ${property.size_sqft} sqft
+Property Type: ${property.property_type}
 Amenities: ${property.amenities.join(', ')}`;
 };
 
@@ -99,16 +130,21 @@ const seedDatabase = async () => {
 
     for (const property of properties) {
       try {
+        // Extract property type from title
+        const property_type = extractPropertyType(property.title);
+
         // Generate description
-        const description = generateDescription(property);
+        const propertyWithType = { ...property, property_type };
+        const description = generateDescription(propertyWithType);
 
         // Generate embedding
-        console.log(`  Processing ID ${property.id}: ${property.title}`);
+        console.log(`  Processing ID ${property.id}: ${property.title} (${property_type})`);
         const embedding = await embeddingService.generateEmbedding(description);
 
         // Create property document
         await Property.create({
           ...property,
+          property_type,
           description,
           embedding,
         });

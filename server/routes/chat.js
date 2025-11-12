@@ -71,9 +71,28 @@ router.post('/message', async (req, res, next) => {
  *               bedrooms:
  *                 type: number
  *                 example: 3
+ *               minBedrooms:
+ *                 type: boolean
+ *                 example: true
+ *                 description: If true, filter for properties with at least this many bedrooms
+ *               bathrooms:
+ *                 type: number
+ *                 example: 2
+ *               minBathrooms:
+ *                 type: boolean
+ *                 example: true
+ *                 description: If true, filter for properties with at least this many bathrooms
  *               location:
  *                 type: string
  *                 example: "New York"
+ *               property_type:
+ *                 type: string
+ *                 example: "Apartment"
+ *                 enum: [Apartment, Condo, Villa, House, Penthouse, Studio, Townhouse, Duplex, Loft, Bungalow, Brownstone, Chalet, Estate, Cabin, Mansion]
+ *               keyword:
+ *                 type: string
+ *                 example: "downtown"
+ *                 description: Search for keywords in title
  *     responses:
  *       200:
  *         description: Filtered properties

@@ -1,14 +1,11 @@
-const { ChatGoogleGenerativeAI } = require('@langchain/google-genai');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 const Property = require('../models/Property');
 const embeddingService = require('./embeddingService');
 require('dotenv').config();
 
 // Initialize Gemini LLM
-const llm = new ChatGoogleGenerativeAI({
-  apiKey: process.env.GEMINI_API_KEY,
-  modelName: 'gemini-pro',
-  temperature: 0.7,
-});
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
 
 /**
  * Perform vector similarity search in MongoDB
@@ -78,8 +75,9 @@ User Question: ${userQuery}
 
 Provide a natural, conversational response that highlights the most relevant properties and explains why they match the user's needs.`;
 
-    const response = await llm.invoke(prompt);
-    return response.content;
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    return response.text();
   } catch (error) {
     console.error('❌ Error generating LLM response:', error.message);
     throw error;

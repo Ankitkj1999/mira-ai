@@ -11,6 +11,7 @@ const errorHandler = require('./middleware/errorHandler');
 // Import routes
 const chatRoutes = require('./routes/chat');
 const propertyRoutes = require('./routes/properties');
+const healthRoutes = require('./routes/health');
 
 const app = express();
 const PORT = process.env.PORT || 7070;
@@ -23,14 +24,18 @@ app.use(express.urlencoded({ extended: true }));
 // API Routes
 app.use('/api/chat', chatRoutes);
 app.use('/api/properties', propertyRoutes);
+app.use('/health', healthRoutes);
 
 // Swagger Documentation
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-
-// Health check
-app.get('/health', (req, res) => {
-  res.json({ status: 'OK', message: 'Mira AI Server is running' });
-});
+app.use(
+  '/api-docs',
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerSpec, {
+    customOptions: {
+      displayRequestDuration: true,
+    },
+  })
+);
 
 // Serve React frontend in production
 if (process.env.NODE_ENV === 'production') {
