@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { Input } from './ui/input';
-import { Button } from './ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
 import { Send, Bot, User, Loader2 } from 'lucide-react';
 import { chatAPI } from '../services/api';
 
@@ -73,45 +73,50 @@ const ChatInterface = ({ onPropertiesFound }) => {
   };
 
   return (
-    <Card className="h-[600px] flex flex-col">
-      <CardHeader className="border-b">
-        <CardTitle className="flex items-center gap-2">
-          <Bot className="w-6 h-6 text-primary" />
-          Chat with Mira AI
+    <Card className="h-[600px] flex flex-col shadow-lg">
+      <CardHeader className="border-b bg-muted/50">
+        <CardTitle className="flex items-center gap-3">
+          <div className="rounded-full bg-primary p-2">
+            <Bot className="w-5 h-5 text-primary-foreground" />
+          </div>
+          <div>
+            <div className="font-semibold">Chat with Mira AI</div>
+            <div className="text-xs text-muted-foreground">Your real estate assistant</div>
+          </div>
         </CardTitle>
       </CardHeader>
 
-      <CardContent className="flex-1 overflow-y-auto p-4 space-y-4">
+      <CardContent className="flex-1 overflow-y-auto p-4 space-y-6">
         {messages.map((message, index) => (
           <div
             key={index}
             className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
           >
             {message.role === 'assistant' && (
-              <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+              <div className="flex-shrink-0 w-9 h-9 rounded-full bg-primary flex items-center justify-center">
                 <Bot className="w-5 h-5 text-primary-foreground" />
               </div>
             )}
 
             <div
-              className={`max-w-[80%] rounded-lg p-3 ${
+              className={`max-w-[85%] rounded-2xl px-4 py-3 ${
                 message.role === 'user'
-                  ? 'bg-primary text-primary-foreground'
+                  ? 'bg-primary text-primary-foreground rounded-tr-none'
                   : message.error
-                    ? 'bg-destructive/10 text-destructive'
-                    : 'bg-muted'
+                    ? 'bg-destructive/10 text-destructive border border-destructive/20 rounded-tl-none'
+                    : 'bg-muted rounded-tl-none'
               }`}
             >
-              <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+              <div className="text-sm whitespace-pre-wrap">{message.content}</div>
               {message.properties && message.properties.length > 0 && (
-                <div className="mt-2 text-xs opacity-75">
-                  Found {message.properties.length} properties
+                <div className="mt-2 text-xs opacity-80 flex items-center gap-1">
+                  <span>Found {message.properties.length} properties</span>
                 </div>
               )}
             </div>
 
             {message.role === 'user' && (
-              <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
+              <div className="flex-shrink-0 w-9 h-9 rounded-full bg-secondary flex items-center justify-center">
                 <User className="w-5 h-5 text-secondary-foreground" />
               </div>
             )}
@@ -120,10 +125,10 @@ const ChatInterface = ({ onPropertiesFound }) => {
 
         {isLoading && (
           <div className="flex gap-3 justify-start">
-            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+            <div className="flex-shrink-0 w-9 h-9 rounded-full bg-primary flex items-center justify-center">
               <Bot className="w-5 h-5 text-primary-foreground" />
             </div>
-            <div className="bg-muted rounded-lg p-3">
+            <div className="bg-muted rounded-2xl rounded-tl-none px-4 py-3">
               <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
             </div>
           </div>
@@ -132,19 +137,30 @@ const ChatInterface = ({ onPropertiesFound }) => {
         <div ref={messagesEndRef} />
       </CardContent>
 
-      <div className="p-4 border-t">
+      <div className="p-4 border-t bg-background">
         <div className="flex gap-2">
-          <Input
-            placeholder="Ask me about properties..."
+          <Textarea
+            placeholder="Describe your dream home..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={handleKeyPress}
             disabled={isLoading}
+            className="min-h-[40px] max-h-[120px] resize-none"
+            rows={1}
           />
-          <Button onClick={handleSend} disabled={isLoading || !input.trim()}>
+          <Button 
+            onClick={handleSend} 
+            disabled={isLoading || !input.trim()}
+            className="self-end h-[40px] rounded-full"
+            size="icon"
+          >
             {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+            <span className="sr-only">Send message</span>
           </Button>
         </div>
+        <p className="text-xs text-center text-muted-foreground mt-2">
+          Press Enter to send, Shift+Enter for new line
+        </p>
       </div>
     </Card>
   );

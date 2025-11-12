@@ -133,11 +133,13 @@ mira-ai/
 ```
 ├── src/                    # React frontend
 │   ├── components/
-│   │   ├── ChatInterface.jsx
-│   │   └── PropertyCard.jsx
+│   │   ├── ChatInterface.jsx        # Chat UI (no comparison)
+│   │   ├── PropertyCard.jsx         # Property card with 3-dot menu
+│   │   ├── PropertyComparison.jsx   # Separate comparison page
+│   │   └── ComparisonList.jsx       # Sidebar/header showing selected properties
 │   ├── services/
 │   │   └── api.js
-│   ├── App.jsx
+│   ├── App.jsx                      # Main app with routing between views
 │   └── main.jsx
 ├── index.html
 └── vite.config.js
@@ -385,23 +387,27 @@ const embedding = await embeddingService.generateEmbedding(description);
   - Loading states with spinner ✅
   - Display property results inline ✅
   - Smooth scrolling to latest message ✅
+  - **Removed**: Property comparison functionality (moved to separate UI)
 
 - [x] `PropertyCard.jsx`:
   - Property image display ✅
   - Key details (price, beds, baths, size) with icons ✅
   - Property type badge ✅
   - Amenities display ✅
-  - Compare checkbox (local state) ✅
-  - View Details button ✅
+  - **Updated**: 3-dot menu (MoreVertical icon) for actions:
+    - Add to Comparison list ✅
+    - View Details ✅
   - Hover effects ✅
 
 - [x] `PropertyComparison.jsx`:
+  - **Moved to separate comparison page/view** ✅
   - Side-by-side comparison table ✅
   - Property images in header ✅
   - All features compared (price, location, type, beds, baths, size, amenities) ✅
   - Icons for better UX ✅
   - Highlight differences ✅
   - Client-side only (no DB storage) ✅
+  - Close/back navigation ✅
 
 ### Step 5.2: API Service Layer ✅ COMPLETE
 - [x] Created `services/api.js`:
@@ -414,9 +420,9 @@ const embedding = await embeddingService.generateEmbedding(description);
 - [x] Using React useState for:
   - Chat messages ✅
   - Current property results ✅
-  - Comparison selection (client-side only) ✅
+  - Comparison list (global state for selected properties) ✅
   - Loading states ✅
-  - Comparison view toggle ✅
+  - Navigation between chat and comparison views ✅
 
 ### Step 5.4: UI/UX Polish ✅ COMPLETE
 - [x] Implemented beautiful UI using shadcn/ui components:
@@ -514,6 +520,7 @@ const embedding = await embeddingService.generateEmbedding(description);
 - ✅ All three JSON files successfully merged and vectorized
 - ✅ Vector search returns relevant properties
 - ✅ RAG responses are contextual and helpful
+- ✅ **UI Simplified**: Property comparison moved to separate view with 3-dot menu on cards
 - ✅ Users can save and compare properties
 - ✅ Application deployed and accessible
 - ✅ Clean, documented code in GitHub
@@ -541,6 +548,13 @@ const embedding = await embeddingService.generateEmbedding(description);
    - Simpler deployment
    - Easier development workflow
    - Better for hackathon timeline
+
+5. **UI Simplification: Separate Comparison View**
+   - Moved property comparison from chat interface to dedicated page
+   - Added 3-dot menu on property cards for "Add to Comparison"
+   - Cleaner chat experience focused on conversation
+   - Better UX for comparison feature (full-screen table vs cramped sidebar)
+   - Maintains comparison functionality while improving overall flow
 
 
 
