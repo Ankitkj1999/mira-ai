@@ -160,7 +160,7 @@ mira-ai/
 - [x] MongoDB URI configured in .env
 - [x] Create database: `mira_real_estate` (will be created automatically on first insert)
 - [x] Create collection: `properties` (will be created by Mongoose)
-- [ ] Enable MongoDB Atlas Vector Search index (after seeding data)
+- [x] Enable MongoDB Atlas Vector Search index (after seeding data)
 
 ### Step 2.2: Define Mongoose Schema ✅ COMPLETE
 - [x] Created `Property` model with:
@@ -484,21 +484,14 @@ const embedding = await embeddingService.generateEmbedding(description);
 
 ## 🎁 Phase 8: Bonus Features (Optional)
 
-### Step 8.1: Enhanced NLP
-- [ ] Improve query understanding with Gemini
-- [ ] Handle complex multi-criteria queries
-- [ ] Extract structured data from natural language
+### Step 8.4: WebSocket Chat Response Streaming
+- [ ] Implement WebSocket endpoint for real-time, streaming AI responses.
+- [ ] Frontend integration to display raster responses as they are generated.
 
-### Step 8.2: Real-Time Search
-- [ ] Implement debounced search
-- [ ] Live filtering as user types
-- [ ] Search suggestions
-
-### Step 8.3: Advanced Features
-- [ ] Property recommendations based on history
-- [ ] Price trend analysis
-- [ ] Neighborhood insights
-- [ ] Virtual tour integration
+### Step 8.5: Audio Input (Speech-to-Text)
+- [ ] Integrate a browser-based speech-to-text library (e.g., Web Speech API, Google TTS client-side).
+- [ ] Allow users to provide chat input via microphone.
+- [ ] Convert audio to text and send to backend RAG pipeline.
 
 ---
 
@@ -535,27 +528,7 @@ const embedding = await embeddingService.generateEmbedding(description);
    - Easier development workflow
    - Better for hackathon timeline
 
----
 
-## ⏱️ Estimated Timeline
-
-**Backend Focus (Phases 1-4):**
-- Phase 1: 1-2 hours (Project Setup & Data Prep)
-- Phase 2: 2-3 hours (Database & Vector Store)
-- Phase 3: 3-4 hours (AI/RAG Implementation)
-- Phase 4: 3-4 hours (Backend API + Swagger)
-
-**Frontend Focus (Phases 5-6):**
-- Phase 5: 4-5 hours (React UI Development)
-- Phase 6: 2 hours (Testing & Integration)
-
-**Deployment (Phase 7):**
-- Phase 7: 1-2 hours (Deployment)
-
-**Optional (Phase 8):**
-- Phase 8: 2-3 hours (Bonus features)
-
-**Total: 18-25 hours**
 
 ---
 
@@ -566,24 +539,4 @@ const embedding = await embeddingService.generateEmbedding(description);
 - [Xenova Transformers](https://huggingface.co/docs/transformers.js)
 - [Google Gemini API](https://ai.google.dev/)
 
----
 
-## 🎯 Development Workflow
-
-**Phase 1-4: Backend First Approach**
-1. Setup backend structure and dependencies
-2. Create data files and seed database
-3. Build AI/RAG services
-4. Create REST APIs with Swagger docs
-5. Test all APIs using Swagger UI or Postman
-
-**Phase 5-6: Frontend Integration**
-1. Build React components
-2. Connect to backend APIs
-3. Test full integration
-
-**Phase 7: Deploy**
-
----
-
-**Next Step:** Begin with Phase 1.1 - Install backend dependencies and set up environment variables.
