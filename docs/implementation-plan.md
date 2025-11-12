@@ -135,8 +135,8 @@ mira-ai/
 ### Step 2.1: MongoDB Atlas Configuration ✅ COMPLETE
 - [x] Create MongoDB Atlas account/cluster (Already connected)
 - [x] MongoDB URI configured in .env
-- [ ] Create database: `mira_real_estate` (will be created automatically on first insert)
-- [ ] Create collection: `properties` (will be created by Mongoose)
+- [x] Create database: `mira_real_estate` (will be created automatically on first insert)
+- [x] Create collection: `properties` (will be created by Mongoose)
 - [ ] Enable MongoDB Atlas Vector Search index (after seeding data)
 
 ### Step 2.2: Define Mongoose Schema ✅ COMPLETE
@@ -253,30 +253,26 @@ const embedding = await embeddingService.generateEmbedding(description);
     4. Pass context + query to LLM
     5. Generate natural language response
 
-### Step 3.4: Property Service ✅ COMPLETE
-- [x] Created `propertyService.js`:
-  - Filter properties by criteria (price, location, bedrooms, bathrooms) ✅
-  - Property type filtering ✅
-  - Keyword search in title ✅
-  - Minimum bedroom/bathroom filters ✅
-  - Combine vector search with traditional filters ✅
-  - Format results for frontend ✅
-  - Added indexes for optimized queries ✅
+### Step 3.4: Property Service
+- [ ] Create `propertyService.js`:
+  - Filter properties by criteria (budget, location, bedrooms, bathrooms, property type, title keywords)
+  - Combine vector search with traditional filters
+  - Format results for frontend
 
 ---
 
 ## 🎨 Phase 4: Backend API Development & Documentation
 
-### Step 4.1: Express Server Setup
-- [ ] Create `server/server.js`:
+### Step 4.1: Express Server Setup ✅ COMPLETE
+- [x] Create `server/server.js`:
   - Configure Express middleware (CORS, JSON parser)
   - Connect to MongoDB
   - Setup error handling middleware
   - Mount API routes
   - Setup Swagger UI endpoint
 
-### Step 4.2: Swagger API Documentation
-- [ ] Create `server/config/swagger.js`:
+### Step 4.2: Swagger API Documentation ✅ PARTIALLY COMPLETE
+- [x] Create `server/config/swagger.js`:
   - Configure swagger-jsdoc
   - Define API info, servers, components
   - Setup security schemes if needed
@@ -284,7 +280,7 @@ const embedding = await embeddingService.generateEmbedding(description);
   - Request/response schemas
   - Parameters documentation
   - Example requests/responses
-- [ ] Swagger UI available at `/api-docs`
+- [x] Swagger UI available at `/api-docs`
 
 ### Step 4.3: Chat API Routes
 - [ ] `POST /api/chat/message`:
