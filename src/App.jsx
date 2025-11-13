@@ -7,14 +7,15 @@ import { Home, ArrowRight, X } from 'lucide-react';
 import { propertiesAPI } from './services/api';
 
 function App() {
-  const [properties, setProperties] = useState([]);
   const [selectedForComparison, setSelectedForComparison] = useState([]);
   const [comparisonProperties, setComparisonProperties] = useState([]);
   const [showComparison, setShowComparison] = useState(false);
-
-  const handlePropertiesFound = (foundProperties) => {
-    setProperties(foundProperties);
-  };
+  const [messages, setMessages] = useState([
+    {
+      role: 'assistant',
+      content: "Hi! I'm Mira, your AI real estate assistant. How can I help you find your dream home today?",
+    },
+  ]);
 
   const handleCompareToggle = (propertyId) => {
     setSelectedForComparison((prev) => {
@@ -51,10 +52,10 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-muted">
+    <div className="h-screen flex flex-col bg-gradient-to-br from-background to-muted">
       {/* Header */}
-      <header className="sticky top-0 z-10 border-b bg-card/80 backdrop-blur-sm">
-        <div className="container mx-auto px-4 py-3">
+      <header className="flex-shrink-0 border-b bg-card/80 backdrop-blur-sm z-10">
+        <div className="w-full max-w-4xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="rounded-lg bg-primary p-2">
@@ -78,7 +79,7 @@ function App() {
                       <X className="w-3 h-3 text-muted-foreground" />
                     </button>
                   </div>
-                  <Button onClick={handleCompare} className="gap-2">
+                  <Button onClick={handleCompare} className="gap-2" size="sm">
                     Compare
                     <ArrowRight className="w-4 h-4" />
                   </Button>
@@ -90,94 +91,28 @@ function App() {
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-6">
+      <main className="flex-1 overflow-hidden">
         {showComparison ? (
-          <div className="pb-8">
-            <PropertyComparison
-              properties={comparisonProperties}
-              onClose={() => {
-                setShowComparison(false);
-                setSelectedForComparison([]);
-              }}
-            />
+          <div className="h-full w-full overflow-y-auto pb-8">
+            <div className="w-full max-w-6xl mx-auto px-4">
+              <PropertyComparison
+                properties={comparisonProperties}
+                onClose={() => {
+                  setShowComparison(false);
+                  setSelectedForComparison([]);
+                }}
+              />
+            </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Chat Interface */}
-            <div className="lg:col-span-1">
-              <ChatInterface onPropertiesFound={handlePropertiesFound} />
-            </div>
-
-            {/* Properties Grid */}
-            <div className="lg:col-span-2">
-              {properties.length > 0 ? (
-                <div className="space-y-6">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div>
-                      <h2 className="text-2xl font-bold">
-                        Found {properties.length} {properties.length === 1 ? 'Property' : 'Properties'}
-                      </h2>
-                      <p className="text-sm text-muted-foreground">
-                        {selectedForComparison.length} selected for comparison
-                      </p>
-                    </div>
-                    
-                    {selectedForComparison.length > 0 && (
-                      <div className="flex items-center gap-2">
-                        <div className="sm:hidden flex items-center gap-1 bg-muted px-2 py-1 rounded-full">
-                          <span className="text-xs text-muted-foreground">{selectedForComparison.length} selected</span>
-                          <button 
-                            onClick={clearSelection}
-                            className="rounded-full hover:bg-muted-foreground/10 p-0.5"
-                          >
-                            <X className="w-3 h-3 text-muted-foreground" />
-                          </button>
-                        </div>
-                        <Button onClick={handleCompare} className="gap-2">
-                          Compare Selected
-                          <ArrowRight className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-                    {properties.map((property) => (
-                      <PropertyCard
-                        key={property.id}
-                        property={property}
-                        onCompareToggle={handleCompareToggle}
-                        isSelected={selectedForComparison.includes(property.id)}
-                      />
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center h-[500px] border-2 border-dashed rounded-xl bg-card">
-                  <div className="text-center space-y-4 max-w-md">
-                    <div className="mx-auto bg-muted rounded-full p-4 w-16 h-16 flex items-center justify-center">
-                      <Home className="w-8 h-8 text-muted-foreground" />
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-semibold">No Properties Yet</h3>
-                      <p className="text-muted-foreground mt-2">
-                        Start chatting with Mira to find your dream home!
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
+          <ChatInterface
+            selectedForComparison={selectedForComparison}
+            onCompareToggle={handleCompareToggle}
+            messages={messages}
+            setMessages={setMessages}
+          />
         )}
       </main>
-
-      {/* Footer */}
-      <footer className="border-t mt-12 bg-card">
-        <div className="container mx-auto px-4 py-6 text-center text-sm text-muted-foreground">
-          <p>© 2025 Mira AI - Powered by RAG & Gemini AI</p>
-        </div>
-      </footer>
     </div>
   );
 }

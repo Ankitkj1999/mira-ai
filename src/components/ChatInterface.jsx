@@ -1,17 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Send, Bot, User, Loader2 } from 'lucide-react';
 import { chatAPI } from '../services/api';
+import PropertyCard from './PropertyCard';
 
-const ChatInterface = ({ onPropertiesFound }) => {
-  const [messages, setMessages] = useState([
-    {
-      role: 'assistant',
-      content: "Hi! I'm Mira, your AI real estate assistant. How can I help you find your dream home today?",
-    },
-  ]);
+const ChatInterface = ({ selectedForComparison, onCompareToggle, messages, setMessages }) => {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef(null);
@@ -46,11 +40,6 @@ const ChatInterface = ({ onPropertiesFound }) => {
           properties: response.data.properties,
         },
       ]);
-
-      // Pass properties to parent
-      if (response.data.properties && response.data.properties.length > 0) {
-        onPropertiesFound(response.data.properties);
-      }
     } catch (error) {
       setMessages((prev) => [
         ...prev,
@@ -73,96 +62,99 @@ const ChatInterface = ({ onPropertiesFound }) => {
   };
 
   return (
-    <Card className="h-[600px] flex flex-col shadow-lg">
-      <CardHeader className="border-b bg-muted/50">
-        <CardTitle className="flex items-center gap-3">
-          <div className="rounded-full bg-primary p-2">
-            <Bot className="w-5 h-5 text-primary-foreground" />
-          </div>
-          <div>
-            <div className="font-semibold">Chat with Mira AI</div>
-            <div className="text-xs text-muted-foreground">Your real estate assistant</div>
-          </div>
-        </CardTitle>
-      </CardHeader>
-
-      <CardContent className="flex-1 overflow-y-auto p-4 space-y-6">
-        {messages.map((message, index) => (
-          <div
-            key={index}
-            className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-          >
-            {message.role === 'assistant' && (
-              <div className="flex-shrink-0 w-9 h-9 rounded-full bg-primary flex items-center justify-center">
-                <Bot className="w-5 h-5 text-primary-foreground" />
-              </div>
-            )}
-
+    <div className="h-full flex flex-col pb-24">
+      {/* Messages Container */}
+      <div className="flex-1 overflow-y-auto px-4 py-6">
+        <div className="max-w-4xl mx-auto space-y-6">
+          {messages.map((message, index) => (
             <div
-              className={`max-w-[85%] rounded-2xl px-4 py-3 ${
-                message.role === 'user'
-                  ? 'bg-primary text-primary-foreground rounded-tr-none'
-                  : message.error
-                    ? 'bg-destructive/10 text-destructive border border-destructive/20 rounded-tl-none'
-                    : 'bg-muted rounded-tl-none'
-              }`}
+              key={index}
+              className={`flex gap-3 ${message.role === 'assistant' ? 'justify-start' : ''}`}
             >
-              <div className="text-sm whitespace-pre-wrap">{message.content}</div>
-              {message.properties && message.properties.length > 0 && (
-                <div className="mt-2 text-xs opacity-80 flex items-center gap-1">
-                  <span>Found {message.properties.length} properties</span>
+              {message.role === 'assistant' && (
+                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+                  <Bot className="w-4 h-4 text-primary-foreground" />
+                </div>
+              )}
+
+              <div className={`flex-1 ${message.role === 'user' ? 'max-w-[85%] ml-auto' : 'max-w-[90%]'}`}>
+                <div
+                  className={`rounded-2xl px-4 py-3 ${
+                    message.role === 'user'
+                      ? 'bg-primary text-primary-foreground rounded-tr-none'
+                      : message.error
+                        ? 'bg-destructive/10 text-destructive border border-destructive/20 rounded-tl-none'
+                        : 'bg-muted rounded-tl-none'
+                  }`}
+                >
+                  <div className="text-sm whitespace-pre-wrap">{message.content}</div>
+                </div>
+                {message.properties && message.properties.length > 0 && (
+                  <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {message.properties.map((property) => (
+                      <PropertyCard
+                        key={property.id}
+                        property={property}
+                        onCompareToggle={onCompareToggle}
+                        isSelected={selectedForComparison.includes(property.id)}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {message.role === 'user' && (
+                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-secondary flex items-center justify-center">
+                  <User className="w-4 h-4 text-secondary-foreground" />
                 </div>
               )}
             </div>
+          ))}
 
-            {message.role === 'user' && (
-              <div className="flex-shrink-0 w-9 h-9 rounded-full bg-secondary flex items-center justify-center">
-                <User className="w-5 h-5 text-secondary-foreground" />
+          {isLoading && (
+            <div className="flex gap-3 justify-start">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+                <Bot className="w-4 h-4 text-primary-foreground" />
               </div>
-            )}
-          </div>
-        ))}
-
-        {isLoading && (
-          <div className="flex gap-3 justify-start">
-            <div className="flex-shrink-0 w-9 h-9 rounded-full bg-primary flex items-center justify-center">
-              <Bot className="w-5 h-5 text-primary-foreground" />
+              <div className="bg-muted rounded-2xl rounded-tl-none px-4 py-3">
+                <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+              </div>
             </div>
-            <div className="bg-muted rounded-2xl rounded-tl-none px-4 py-3">
-              <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
-            </div>
-          </div>
-        )}
+          )}
 
-        <div ref={messagesEndRef} />
-      </CardContent>
-
-      <div className="p-4 border-t bg-background">
-        <div className="flex gap-2">
-          <Textarea
-            placeholder="Describe your dream home..."
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyPress={handleKeyPress}
-            disabled={isLoading}
-            className="min-h-[40px] max-h-[120px] resize-none"
-            rows={1}
-          />
-          <Button 
-            onClick={handleSend} 
-            disabled={isLoading || !input.trim()}
-            className="self-end h-[40px] rounded-full"
-            size="icon"
-          >
-            {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-            <span className="sr-only">Send message</span>
-          </Button>
+          <div ref={messagesEndRef} />
         </div>
-        <p className="text-xs text-center text-muted-foreground mt-2">
-          Press Enter to send, Shift+Enter for new line
-        </p>
       </div>
-    </Card>
+
+      {/* Fixed Input Area */}
+      <div className="fixed bottom-0 left-0 right-0 border-t bg-background/95 backdrop-blur-sm z-10">
+        <div className="max-w-4xl mx-auto px-4 py-4">
+          <div className="flex gap-2">
+            <Textarea
+              placeholder="Describe your dream home..."
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyPress={handleKeyPress}
+              disabled={isLoading}
+              className="min-h-[56px] max-h-[120px] resize-none rounded-3xl"
+              rows={1}
+            />
+            <Button
+              onClick={handleSend}
+              disabled={isLoading || !input.trim()}
+              className="self-end h-[56px] w-[56px] rounded-full"
+              size="icon"
+            >
+              {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
+              <span className="sr-only">Send message</span>
+            </Button>
+          </div>
+          <p className="text-xs text-center text-muted-foreground mt-2">
+            Press Enter to send, Shift+Enter for new line
+          </p>
+        </div>
+      </div>
+    </div>
   );
 };
 
