@@ -73,7 +73,13 @@ ${context}
 
 User Question: ${userQuery}
 
-Provide a natural, conversational response that highlights the most relevant properties and explains why they match the user's needs.`;
+Provide a natural, conversational response using **Markdown formatting**:
+- Use **bold** for property names and important details
+- Use bullet points (*) for listing amenities or features
+- Use headings (##) to organize by location or category when relevant
+- Keep your response clear, concise, and well-structured
+
+Highlight the most relevant properties and explain why they match the user's needs.`;
 
     const result = await model.generateContent(prompt);
     const response = await result.response;

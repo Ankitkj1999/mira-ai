@@ -1,4 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Send, Bot, User, Loader2 } from 'lucide-react';
@@ -87,7 +89,27 @@ const ChatInterface = ({ selectedForComparison, onCompareToggle, messages, setMe
                         : 'bg-muted rounded-tl-none'
                   }`}
                 >
-                  <div className="text-sm whitespace-pre-wrap">{message.content}</div>
+                  {message.role === 'assistant' ? (
+                    <div className="text-sm prose prose-sm max-w-none">
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        components={{
+                          p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                          ul: ({ children }) => <ul className="mb-2 ml-4 list-disc">{children}</ul>,
+                          ol: ({ children }) => <ol className="mb-2 ml-4 list-decimal">{children}</ol>,
+                          li: ({ children }) => <li className="mb-1">{children}</li>,
+                          strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
+                          h1: ({ children }) => <h1 className="text-lg font-bold mb-2">{children}</h1>,
+                          h2: ({ children }) => <h2 className="text-base font-bold mb-2 mt-3">{children}</h2>,
+                          h3: ({ children }) => <h3 className="text-sm font-bold mb-1 mt-2">{children}</h3>,
+                        }}
+                      >
+                        {message.content}
+                      </ReactMarkdown>
+                    </div>
+                  ) : (
+                    <div className="text-sm whitespace-pre-wrap">{message.content}</div>
+                  )}
                 </div>
                 {message.properties && message.properties.length > 0 && (
                   <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
