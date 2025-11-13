@@ -71,15 +71,15 @@ const ChatInterface = ({ selectedForComparison, onCompareToggle, messages, setMe
           {messages.map((message, index) => (
             <div
               key={index}
-              className={`flex gap-3 ${message.role === 'assistant' ? 'justify-start' : ''}`}
+              className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
               {message.role === 'assistant' && (
-                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary flex items-center justify-center self-start">
                   <Bot className="w-4 h-4 text-primary-foreground" />
                 </div>
               )}
 
-              <div className={`flex-1 ${message.role === 'user' ? 'max-w-[85%] ml-auto' : 'max-w-[90%]'}`}>
+              <div className={message.role === 'user' ? 'max-w-[85%]' : 'flex-1 max-w-[90%]'}>
                 <div
                   className={`rounded-2xl px-4 py-3 ${
                     message.role === 'user'
@@ -126,7 +126,7 @@ const ChatInterface = ({ selectedForComparison, onCompareToggle, messages, setMe
               </div>
 
               {message.role === 'user' && (
-                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-secondary flex items-center justify-center">
+                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-secondary flex items-center justify-center self-start">
                   <User className="w-4 h-4 text-secondary-foreground" />
                 </div>
               )}

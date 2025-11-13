@@ -96,7 +96,27 @@ export const propertiesAPI = {
   },
 };
 
+/**
+ * Health API
+ */
+export const healthAPI = {
+  /**
+   * Check server health status
+   * @returns {Promise<Object>} - Health status
+   */
+  checkHealth: async () => {
+    try {
+      const response = await fetch('http://localhost:7070/health');
+      const data = await response.json();
+      return { status: response.ok ? 'healthy' : 'unhealthy', data };
+    } catch (error) {
+      return { status: 'unhealthy', error: error.message };
+    }
+  },
+};
+
 export default {
   chat: chatAPI,
   properties: propertiesAPI,
+  health: healthAPI,
 };

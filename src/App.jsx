@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ChatInterface from '@/components/ChatInterface';
 import PropertyCard from '@/components/PropertyCard';
 import PropertyComparison from '@/components/PropertyComparison';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Home, ArrowRight, X } from 'lucide-react';
-import { propertiesAPI } from './services/api';
+import { propertiesAPI, healthAPI } from './services/api';
 
 function App() {
   const [selectedForComparison, setSelectedForComparison] = useState([]);
@@ -16,6 +17,20 @@ function App() {
       content: "Hi! I'm Mira, your AI real estate assistant. How can I help you find your dream home today?",
     },
   ]);
+  const [healthStatus, setHealthStatus] = useState('checking'); // 'healthy', 'unhealthy', 'checking'
+
+  // Check health status on mount and every 30 seconds
+  useEffect(() => {
+    const checkHealth = async () => {
+      const result = await healthAPI.checkHealth();
+      setHealthStatus(result.status);
+    };
+
+    checkHealth();
+    const interval = setInterval(checkHealth, 30000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   const handleCompareToggle = (propertyId) => {
     setSelectedForComparison((prev) => {
@@ -68,6 +83,23 @@ function App() {
             </div>
             
             <div className="flex items-center gap-2">
+              {/* Health Status Indicator */}
+              <div 
+                className="flex items-center gap-1 px-2 py-0.5 rounded-full border border-border/50 bg-transparent"
+                title={healthStatus === 'healthy' ? 'Server Online' : healthStatus === 'unhealthy' ? 'Server Offline' : 'Checking Status'}
+              >
+                <div className={`w-1.5 h-1.5 rounded-full ${
+                  healthStatus === 'healthy' 
+                    ? 'bg-green-500' 
+                    : healthStatus === 'unhealthy'
+                    ? 'bg-red-500'
+                    : 'bg-yellow-500'
+                }`} />
+                <span className="text-xs text-muted-foreground">
+                  {healthStatus === 'healthy' ? 'Online' : healthStatus === 'unhealthy' ? 'Offline' : 'Checking'}
+                </span>
+              </div>
+              
               {selectedForComparison.length > 0 && (
                 <>
                   <div className="hidden sm:flex items-center gap-1 bg-muted px-2 py-1 rounded-full">
