@@ -46,6 +46,64 @@ router.get('/', async (req, res, next) => {
 
 /**
  * @swagger
+ * /api/properties/filter-metadata:
+ *   get:
+ *     summary: Get filter metadata (distinct values for filters)
+ *     tags: [Properties]
+ *     responses:
+ *       200:
+ *         description: Filter metadata with distinct values
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     locations:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *                     propertyTypes:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *                     bedrooms:
+ *                       type: array
+ *                       items:
+ *                         type: number
+ *                     bathrooms:
+ *                       type: array
+ *                       items:
+ *                         type: number
+ *                     priceRange:
+ *                       type: object
+ *                       properties:
+ *                         min:
+ *                           type: number
+ *                         max:
+ *                           type: number
+ *       500:
+ *         description: Server error
+ */
+router.get('/filter-metadata', async (req, res, next) => {
+  try {
+    const metadata = await propertyService.getFilterMetadata();
+
+    res.json({
+      success: true,
+      data: metadata,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * @swagger
  * /api/properties/{id}:
  *   get:
  *     summary: Get property by ID

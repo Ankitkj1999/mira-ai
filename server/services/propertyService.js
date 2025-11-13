@@ -126,10 +126,46 @@ const compareProperties = async (ids) => {
   }
 };
 
+/**
+ * Get filter metadata (distinct values for filter options)
+ * @returns {Promise<Object>} - Filter metadata
+ */
+const getFilterMetadata = async () => {
+  try {
+    // Get distinct values for each filter field
+    const [locations, propertyTypes, bedroomOptions, bathroomOptions, prices] = await Promise.all([
+      Property.distinct('location'),
+      Property.distinct('property_type'),
+      Property.distinct('bedrooms'),
+      Property.distinct('bathrooms'),
+      Property.find().select('price').lean(),
+    ]);
+
+    // Calculate price range
+    const priceValues = prices.map((p) => p.price);
+    const priceRange = {
+      min: Math.min(...priceValues),
+      max: Math.max(...priceValues),
+    };
+
+    return {
+      locations: locations.sort(),
+      propertyTypes: propertyTypes.sort(),
+      bedrooms: bedroomOptions.sort((a, b) => a - b),
+      bathrooms: bathroomOptions.sort((a, b) => a - b),
+      priceRange,
+    };
+  } catch (error) {
+    console.error('❌ Error fetching filter metadata:', error.message);
+    throw error;
+  }
+};
+
 module.exports = {
   getAllProperties,
   getPropertyById,
   filterProperties,
   formatPropertyForResponse,
   compareProperties,
+  getFilterMetadata,
 };

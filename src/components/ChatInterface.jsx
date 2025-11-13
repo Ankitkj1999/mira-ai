@@ -3,13 +3,29 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Send, Bot, User, Loader2 } from 'lucide-react';
-import { chatAPI } from '../services/api';
+import { Input } from '@/components/ui/input';
+import { Select } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Send, Bot, User, Loader2, SlidersHorizontal, MessageSquare } from 'lucide-react';
+import { chatAPI, propertiesAPI } from '../services/api';
 import PropertyCard from './PropertyCard';
 
 const ChatInterface = ({ selectedForComparison, onCompareToggle, messages, setMessages }) => {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [searchMode, setSearchMode] = useState('ai'); // 'ai' or 'filter'
+  const [filterCriteria, setFilterCriteria] = useState({
+    keyword: '',
+    minPrice: '',
+    maxPrice: '',
+    bedrooms: '',
+    minBedrooms: true,
+    bathrooms: '',
+    minBathrooms: true,
+    location: '',
+    property_type: '',
+  });
+  const [filterMetadata, setFilterMetadata] = useState(null);
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -19,6 +35,19 @@ const ChatInterface = ({ selectedForComparison, onCompareToggle, messages, setMe
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Fetch filter metadata on mount
+  useEffect(() => {
+    const fetchMetadata = async () => {
+      try {
+        const response = await propertiesAPI.getFilterMetadata();
+        setFilterMetadata(response.data);
+      } catch (error) {
+        console.error('Failed to fetch filter metadata:', error);
+      }
+    };
+    fetchMetadata();
+  }, []);
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
@@ -61,6 +90,105 @@ const ChatInterface = ({ selectedForComparison, onCompareToggle, messages, setMe
       e.preventDefault();
       handleSend();
     }
+  };
+
+  const handleFilterChange = (field, value) => {
+    setFilterCriteria((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleFilterSubmit = async () => {
+    if (isLoading) return;
+
+    // Clean filter criteria - remove empty values
+    const cleanedFilters = {};
+    if (filterCriteria.keyword?.trim()) cleanedFilters.keyword = filterCriteria.keyword.trim();
+    if (filterCriteria.minPrice) cleanedFilters.minPrice = Number(filterCriteria.minPrice);
+    if (filterCriteria.maxPrice) cleanedFilters.maxPrice = Number(filterCriteria.maxPrice);
+    if (filterCriteria.bedrooms) {
+      cleanedFilters.bedrooms = Number(filterCriteria.bedrooms);
+      cleanedFilters.minBedrooms = filterCriteria.minBedrooms;
+    }
+    if (filterCriteria.bathrooms) {
+      cleanedFilters.bathrooms = Number(filterCriteria.bathrooms);
+      cleanedFilters.minBathrooms = filterCriteria.minBathrooms;
+    }
+    if (filterCriteria.location?.trim()) cleanedFilters.location = filterCriteria.location.trim();
+    if (filterCriteria.property_type) cleanedFilters.property_type = filterCriteria.property_type;
+
+    // Check if at least one filter is provided
+    if (Object.keys(cleanedFilters).length === 0) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: 'assistant',
+          content: 'Please specify at least one filter criterion to search.',
+          error: true,
+        },
+      ]);
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const response = await chatAPI.filterProperties(cleanedFilters);
+
+      // Format filter summary
+      const filterSummary = [];
+      if (cleanedFilters.minPrice || cleanedFilters.maxPrice) {
+        const priceRange = `Price: ${cleanedFilters.minPrice ? `$${cleanedFilters.minPrice.toLocaleString()}` : 'Any'} - ${cleanedFilters.maxPrice ? `$${cleanedFilters.maxPrice.toLocaleString()}` : 'Any'}`;
+        filterSummary.push(priceRange);
+      }
+      if (cleanedFilters.bedrooms) {
+        filterSummary.push(`${cleanedFilters.minBedrooms ? '' : 'Exactly '}${cleanedFilters.bedrooms}${cleanedFilters.minBedrooms ? '+' : ''} bedroom${cleanedFilters.bedrooms > 1 ? 's' : ''}`);
+      }
+      if (cleanedFilters.bathrooms) {
+        filterSummary.push(`${cleanedFilters.minBathrooms ? '' : 'Exactly '}${cleanedFilters.bathrooms}${cleanedFilters.minBathrooms ? '+' : ''} bathroom${cleanedFilters.bathrooms > 1 ? 's' : ''}`);
+      }
+      if (cleanedFilters.location) filterSummary.push(`Location: ${cleanedFilters.location}`);
+      if (cleanedFilters.property_type) filterSummary.push(`Type: ${cleanedFilters.property_type}`);
+      if (cleanedFilters.keyword) filterSummary.push(`Keyword: "${cleanedFilters.keyword}"`);
+
+      const summaryText =
+        response.count > 0
+          ? `Found ${response.count} propert${response.count === 1 ? 'y' : 'ies'} matching your criteria:\n${filterSummary.map((s) => `- ${s}`).join('\n')}`
+          : 'No properties found matching your criteria. Try adjusting your filters.';
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: 'assistant',
+          content: summaryText,
+          properties: response.data,
+          source: 'filter',
+        },
+      ]);
+    } catch (error) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: 'assistant',
+          content: 'Sorry, I encountered an error while filtering properties. Please try again.',
+          error: true,
+        },
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleClearFilters = () => {
+    setFilterCriteria({
+      keyword: '',
+      minPrice: '',
+      maxPrice: '',
+      bedrooms: '',
+      minBedrooms: true,
+      bathrooms: '',
+      minBathrooms: true,
+      location: '',
+      property_type: '',
+    });
   };
 
   return (
@@ -150,30 +278,207 @@ const ChatInterface = ({ selectedForComparison, onCompareToggle, messages, setMe
 
       {/* Fixed Input Area */}
       <div className="fixed bottom-0 left-0 right-0 border-t bg-background/95 backdrop-blur-sm z-10">
-        <div className="max-w-4xl mx-auto px-4 py-4">
-          <div className="flex gap-2">
-            <Textarea
-              placeholder="Describe your dream home..."
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyPress={handleKeyPress}
-              disabled={isLoading}
-              className="min-h-[56px] max-h-[120px] resize-none rounded-3xl"
-              rows={1}
-            />
-            <Button
-              onClick={handleSend}
-              disabled={isLoading || !input.trim()}
-              className="self-end h-[56px] w-[56px] rounded-full"
-              size="icon"
+        <div className="max-w-4xl mx-auto px-4 py-3">
+          {/* Mode Toggle */}
+          <div className="flex gap-2 mb-3">
+            <button
+              onClick={() => setSearchMode('ai')}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                searchMode === 'ai'
+                  ? 'bg-muted text-foreground'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
             >
-              {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
-              <span className="sr-only">Send message</span>
-            </Button>
+              <MessageSquare className="w-4 h-4" />
+              AI Chat
+            </button>
+            <button
+              onClick={() => setSearchMode('filter')}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                searchMode === 'filter'
+                  ? 'bg-muted text-foreground'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <SlidersHorizontal className="w-4 h-4" />
+              Filter
+            </button>
           </div>
-          <p className="text-xs text-center text-muted-foreground mt-2">
-            Press Enter to send, Shift+Enter for new line
-          </p>
+
+          {/* Filter Panel */}
+          {searchMode === 'filter' && (
+            <div className="mb-3 p-4 bg-muted/50 rounded-lg space-y-3">
+              {/* Keyword Search */}
+              <div>
+                <label className="block text-xs text-muted-foreground mb-1">Keyword</label>
+                <Input
+                  placeholder="Search in titles..."
+                  value={filterCriteria.keyword}
+                  onChange={(e) => handleFilterChange('keyword', e.target.value)}
+                  className="h-9"
+                />
+              </div>
+
+              {/* Price Range */}
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-xs text-muted-foreground mb-1">
+                    Min Price {filterMetadata && `($${filterMetadata.priceRange.min.toLocaleString()})`}
+                  </label>
+                  <Input
+                    type="number"
+                    placeholder={filterMetadata ? `$${filterMetadata.priceRange.min.toLocaleString()}` : '$0'}
+                    value={filterCriteria.minPrice}
+                    onChange={(e) => handleFilterChange('minPrice', e.target.value)}
+                    className="h-9"
+                    min={filterMetadata?.priceRange.min}
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-muted-foreground mb-1">
+                    Max Price {filterMetadata && `($${filterMetadata.priceRange.max.toLocaleString()})`}
+                  </label>
+                  <Input
+                    type="number"
+                    placeholder={filterMetadata ? `$${filterMetadata.priceRange.max.toLocaleString()}` : 'Any'}
+                    value={filterCriteria.maxPrice}
+                    onChange={(e) => handleFilterChange('maxPrice', e.target.value)}
+                    className="h-9"
+                    max={filterMetadata?.priceRange.max}
+                  />
+                </div>
+              </div>
+
+              {/* Bedrooms */}
+              <div>
+                <label className="block text-xs text-muted-foreground mb-1">Bedrooms</label>
+                <div className="flex items-center gap-2">
+                  <Select
+                    value={filterCriteria.bedrooms}
+                    onChange={(e) => handleFilterChange('bedrooms', e.target.value)}
+                    className="h-9 flex-1"
+                  >
+                    <option value="">Any</option>
+                    {filterMetadata?.bedrooms.map((num) => (
+                      <option key={num} value={num}>
+                        {num}
+                      </option>
+                    ))}
+                  </Select>
+                  <label className="flex items-center gap-1.5 text-xs text-muted-foreground whitespace-nowrap">
+                    <Checkbox
+                      checked={filterCriteria.minBedrooms}
+                      onChange={(e) => handleFilterChange('minBedrooms', e.target.checked)}
+                    />
+                    At least
+                  </label>
+                </div>
+              </div>
+
+              {/* Bathrooms */}
+              <div>
+                <label className="block text-xs text-muted-foreground mb-1">Bathrooms</label>
+                <div className="flex items-center gap-2">
+                  <Select
+                    value={filterCriteria.bathrooms}
+                    onChange={(e) => handleFilterChange('bathrooms', e.target.value)}
+                    className="h-9 flex-1"
+                  >
+                    <option value="">Any</option>
+                    {filterMetadata?.bathrooms.map((num) => (
+                      <option key={num} value={num}>
+                        {num}
+                      </option>
+                    ))}
+                  </Select>
+                  <label className="flex items-center gap-1.5 text-xs text-muted-foreground whitespace-nowrap">
+                    <Checkbox
+                      checked={filterCriteria.minBathrooms}
+                      onChange={(e) => handleFilterChange('minBathrooms', e.target.checked)}
+                    />
+                    At least
+                  </label>
+                </div>
+              </div>
+
+              {/* Location */}
+              <div>
+                <label className="block text-xs text-muted-foreground mb-1">Location</label>
+                <Select
+                  value={filterCriteria.location}
+                  onChange={(e) => handleFilterChange('location', e.target.value)}
+                >
+                  <option value="">Any</option>
+                  {filterMetadata?.locations.map((loc) => (
+                    <option key={loc} value={loc}>
+                      {loc}
+                    </option>
+                  ))}
+                </Select>
+              </div>
+
+              {/* Property Type */}
+              <div>
+                <label className="block text-xs text-muted-foreground mb-1">Property Type</label>
+                <Select
+                  value={filterCriteria.property_type}
+                  onChange={(e) => handleFilterChange('property_type', e.target.value)}
+                >
+                  <option value="">Any</option>
+                  {filterMetadata?.propertyTypes.map((type) => (
+                    <option key={type} value={type}>
+                      {type}
+                    </option>
+                  ))}
+                </Select>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-2 pt-1">
+                <Button
+                  onClick={handleClearFilters}
+                  variant="outline"
+                  className="flex-1"
+                  disabled={isLoading}
+                >
+                  Clear
+                </Button>
+                <Button onClick={handleFilterSubmit} className="flex-1" disabled={isLoading}>
+                  {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Search'}
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Chat Input (AI Mode) */}
+          {searchMode === 'ai' && (
+            <div className="flex gap-2">
+              <Textarea
+                placeholder="Describe your dream home..."
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyPress={handleKeyPress}
+                disabled={isLoading}
+                className="min-h-[56px] max-h-[120px] resize-none rounded-3xl"
+                rows={1}
+              />
+              <Button
+                onClick={handleSend}
+                disabled={isLoading || !input.trim()}
+                className="self-end h-[56px] w-[56px] rounded-full"
+                size="icon"
+              >
+                {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
+                <span className="sr-only">Send message</span>
+              </Button>
+            </div>
+          )}
+
+          {searchMode === 'ai' && (
+            <p className="text-xs text-center text-muted-foreground mt-2">
+              Press Enter to send, Shift+Enter for new line
+            </p>
+          )}
         </div>
       </div>
     </div>

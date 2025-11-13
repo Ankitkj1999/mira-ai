@@ -94,6 +94,14 @@ export const propertiesAPI = {
       body: JSON.stringify({ ids }),
     });
   },
+
+  /**
+   * Get filter metadata (distinct values)
+   * @returns {Promise<Object>} - Filter metadata
+   */
+  getFilterMetadata: async () => {
+    return fetchAPI('/properties/filter-metadata');
+  },
 };
 
 /**
