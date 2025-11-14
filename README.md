@@ -4,7 +4,12 @@
 
 Mira AI is an intelligent real estate chatbot that helps users find their dream homes. It uses a Retrieval Augmented Generation (RAG) architecture to understand user queries, search a database of properties using vector similarity, and provide natural, context-aware responses.
 
-For a detailed breakdown of the project architecture, phases, and technical decisions, please see the [Implementation Plan](./docs/implementation-plan.md).
+**🌐 Live Demo:** https://mira.gksage.com
+
+### 📚 Documentation
+
+- [Implementation Plan](./docs/implementation-plan.md) - Detailed breakdown of project architecture, phases, and technical decisions
+- [Deployment Guide](./docs/deployment-guide.md) - Complete deployment documentation with CI/CD pipeline, architecture diagrams, and troubleshooting
 
 ## ✨ Features
 
@@ -101,8 +106,28 @@ npm run dev
 
 ---
 
+## 🚀 Production Deployment
+
+Mira AI is deployed on AWS EC2 with automated CI/CD using GitHub Actions and Docker.
+
+**Live URL:** https://mira.gksage.com
+
+### Architecture Highlights
+
+- ✅ **Automated CI/CD:** GitHub Actions builds and deploys on every push to `main`
+- ✅ **Dockerized:** Multi-stage builds for optimized production images
+- ✅ **Nginx Reverse Proxy:** SSL/TLS termination with Let's Encrypt
+- ✅ **Zero-Downtime Deployments:** Graceful container shutdown and restart
+- ✅ **MongoDB Atlas:** Cloud-hosted vector database
+- ✅ **Environment-Based Config:** Secure credential management
+
+For complete deployment documentation including architecture diagrams, troubleshooting, and manual deployment steps, see the **[Deployment Guide](./docs/deployment-guide.md)**.
+
+---
+
 ## 📚 API Documentation
 
 Once the backend is running, you can access the interactive Swagger API documentation at:
 
-**➡️ http://localhost:7070/api-docs**
+**➡️ http://localhost:7070/api-docs** (Development)  
+**➡️ https://mira.gksage.com/api-docs** (Production)

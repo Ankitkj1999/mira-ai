@@ -5,6 +5,10 @@ on:
     branches:
       - main
       - master
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - 'README.md'
 
 env:
   DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
