@@ -88,7 +88,12 @@ jobs:
           echo "Stopping old container..."
           if docker ps -q -f name=$CONTAINER_NAME | grep -q .; then
             docker stop -t 10 $CONTAINER_NAME
-            docker rm $CONTAINER_NAME
+          fi
+          
+          # Remove container by name (running, stopped, or created)
+          if docker ps -aq -f name=$CONTAINER_NAME | grep -q .; then
+            echo "Removing existing container: $CONTAINER_NAME"
+            docker rm -f $CONTAINER_NAME
           fi
           
           # Verify port is free, force cleanup if needed
