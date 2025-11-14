@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Bed, Bath, Maximize, MapPin } from 'lucide-react';
 
+
 const PropertyCard = ({ property, onCompareToggle, isSelected }) => {
   const formatPrice = (price) => {
     return new Intl.NumberFormat('en-US', {
@@ -13,6 +14,7 @@ const PropertyCard = ({ property, onCompareToggle, isSelected }) => {
     }).format(price);
   };
 
+  
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5 h-full flex flex-col">
       {/* Property Image */}
