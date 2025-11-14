@@ -14,7 +14,8 @@ echo ""
 
 # Configuration
 DOMAIN="mira.gksage.com"
-APP_PORT=3001
+HOST_PORT=3001
+CONTAINER_PORT=7070
 CONTAINER_NAME="mira-ai-app"
 IMAGE_NAME="ankitkj199/mira-ai"
 
@@ -44,7 +45,7 @@ server {
 
     # Proxy settings
     location / {
-        proxy_pass http://localhost:${APP_PORT};
+        proxy_pass http://localhost:${HOST_PORT};
         proxy_http_version 1.1;
         
         # WebSocket support
@@ -68,13 +69,13 @@ server {
 
     # Health check endpoint
     location /health {
-        proxy_pass http://localhost:${APP_PORT}/health;
+        proxy_pass http://localhost:${HOST_PORT}/health;
         access_log off;
     }
 
     # API endpoints
     location /api {
-        proxy_pass http://localhost:${APP_PORT}/api;
+        proxy_pass http://localhost:${HOST_PORT}/api;
         proxy_http_version 1.1;
         proxy_set_header Upgrade \$http_upgrade;
         proxy_set_header Connection 'upgrade';
@@ -164,7 +165,8 @@ echo -e "${BLUE}========================================${NC}"
 echo ""
 echo -e "${GREEN}Configuration Summary:${NC}"
 echo -e "  Domain: ${DOMAIN}"
-echo -e "  App Port: ${APP_PORT}"
+echo -e "  Host Port: ${HOST_PORT}"
+echo -e "  Container Port: ${CONTAINER_PORT}"
 echo -e "  Container: ${CONTAINER_NAME}"
 echo -e "  Image: ${IMAGE_NAME}"
 echo -e "  Data Dir: /home/ubuntu/mira-ai/data"
@@ -189,15 +191,22 @@ echo -e "  ${BLUE}# Run new container${NC}"
 echo -e "  docker run -d \\"
 echo -e "    --name ${CONTAINER_NAME} \\"
 echo -e "    --restart unless-stopped \\"
-echo -e "    -p ${APP_PORT}:3001 \\"
+echo -e "    -p ${HOST_PORT}:${CONTAINER_PORT} \\"
+echo -e "    --env-file /home/ubuntu/mira-ai/.env \\"
 echo -e "    -v /home/ubuntu/mira-ai/data:/app/data \\"
-echo -e "    -e NODE_ENV=production \\"
 echo -e "    ${IMAGE_NAME}:latest"
 echo ""
 echo -e "${YELLOW}Check Status:${NC}"
 echo -e "  docker ps | grep ${CONTAINER_NAME}"
 echo -e "  docker logs -f ${CONTAINER_NAME}"
-echo -e "  curl http://localhost:${APP_PORT}/health"
+echo -e "  curl http://localhost:${HOST_PORT}/health"
+echo ""
+echo -e "${YELLOW}Important:${NC}"
+echo -e "  Make sure /home/ubuntu/mira-ai/.env exists with:"
+echo -e "    MONGODB_URI=your-mongodb-connection-string"
+echo -e "    GEMINI_API_KEY=your-api-key"
+echo -e "    PORT=7070"
+echo -e "    NODE_ENV=production"
 echo ""
 echo -e "${GREEN}Access your app at: https://${DOMAIN}${NC}"
 echo ""
