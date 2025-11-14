@@ -270,8 +270,10 @@ const ChatInterface = ({ selectedForComparison, onCompareToggle, messages, setMe
       </div>
 
       {/* Fixed Input Area */}
-      <div className="fixed bottom-0 left-0 right-0 border-t border-border/30" style={{ backgroundColor: '#ffffff' }}>
-        <div className="max-w-4xl mx-auto px-4 pb-4 pt-3">
+      <div className="fixed bottom-0 left-0 right-0 pb-4 pt-2">
+        <div className="max-w-4xl mx-auto px-4">
+          <div className="rounded-3xl shadow-xl border border-border" style={{ backgroundColor: '#ffffff' }}>
+            <div className="px-4 py-3">
           {/* Mode Toggle */}
           <div className="flex gap-2 mb-2">
             <button
@@ -456,6 +458,8 @@ const ChatInterface = ({ selectedForComparison, onCompareToggle, messages, setMe
               </p>
             </>
           )}
+            </div>
+          </div>
         </div>
       </div>
     </div>
