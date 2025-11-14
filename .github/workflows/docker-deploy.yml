@@ -84,10 +84,22 @@ jobs:
           echo "Pulling latest image..."
           docker pull $DOCKER_USERNAME/$IMAGE_NAME:latest
           
-          # Stop and remove old container if it exists
+          # Stop and remove old container gracefully
           echo "Stopping old container..."
-          docker stop $CONTAINER_NAME 2>/dev/null || true
-          docker rm $CONTAINER_NAME 2>/dev/null || true
+          if docker ps -q -f name=$CONTAINER_NAME | grep -q .; then
+            docker stop -t 10 $CONTAINER_NAME
+            docker rm $CONTAINER_NAME
+          fi
+          
+          # Verify port is free, force cleanup if needed
+          echo "Verifying port availability..."
+          if docker ps -q --filter "publish=$APP_PORT" | grep -q .; then
+            echo "Warning: Found container using port $APP_PORT, forcing removal..."
+            docker ps -q --filter "publish=$APP_PORT" | xargs docker rm -f
+          fi
+          
+          # Brief pause for OS to release resources
+          sleep 2
           
           # Run new container
           echo "Starting new container..."
