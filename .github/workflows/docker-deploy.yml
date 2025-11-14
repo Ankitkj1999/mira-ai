@@ -84,6 +84,10 @@ jobs:
           echo "Pulling latest image..."
           docker pull $DOCKER_USERNAME/$IMAGE_NAME:latest
           
+          # Ensure PORT in .env matches container port
+          echo "Configuring environment..."
+          sed -i 's/^PORT=.*/PORT=3001/' /home/ubuntu/mira-ai/.env || echo "PORT=3001" >> /home/ubuntu/mira-ai/.env
+          
           # Stop and remove old container gracefully
           echo "Stopping old container..."
           if docker ps -q -f name=$CONTAINER_NAME | grep -q .; then
