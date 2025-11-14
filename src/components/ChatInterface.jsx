@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Send, Bot, User, Loader2, SlidersHorizontal, MessageSquare } from 'lucide-react';
+import { Send, Bot, User, Loader2, SlidersHorizontal, MessageSquare, ChevronDown, ChevronUp } from 'lucide-react';
 import { chatAPI, propertiesAPI } from '../services/api';
 import PropertyCard from './PropertyCard';
 
@@ -14,6 +14,7 @@ const ChatInterface = ({ selectedForComparison, onCompareToggle, messages, setMe
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [searchMode, setSearchMode] = useState('ai'); // 'ai' or 'filter'
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [filterCriteria, setFilterCriteria] = useState({
     keyword: '',
     minPrice: '',
@@ -115,19 +116,6 @@ const ChatInterface = ({ selectedForComparison, onCompareToggle, messages, setMe
     if (filterCriteria.location?.trim()) cleanedFilters.location = filterCriteria.location.trim();
     if (filterCriteria.property_type) cleanedFilters.property_type = filterCriteria.property_type;
 
-    // Check if at least one filter is provided
-    if (Object.keys(cleanedFilters).length === 0) {
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: 'assistant',
-          content: 'Please specify at least one filter criterion to search.',
-          error: true,
-        },
-      ]);
-      return;
-    }
-
     setIsLoading(true);
 
     try {
@@ -149,10 +137,15 @@ const ChatInterface = ({ selectedForComparison, onCompareToggle, messages, setMe
       if (cleanedFilters.property_type) filterSummary.push(`Type: ${cleanedFilters.property_type}`);
       if (cleanedFilters.keyword) filterSummary.push(`Keyword: "${cleanedFilters.keyword}"`);
 
+      const hasFilters = Object.keys(cleanedFilters).length > 0;
       const summaryText =
         response.count > 0
-          ? `Found ${response.count} propert${response.count === 1 ? 'y' : 'ies'} matching your criteria:\n${filterSummary.map((s) => `- ${s}`).join('\n')}`
-          : 'No properties found matching your criteria. Try adjusting your filters.';
+          ? hasFilters
+            ? `Found ${response.count} propert${response.count === 1 ? 'y' : 'ies'} matching your criteria:\n${filterSummary.map((s) => `- ${s}`).join('\n')}`
+            : `Showing all ${response.count} available properties.`
+          : hasFilters
+            ? 'No properties found matching your criteria. Try adjusting your filters.'
+            : 'No properties available at the moment.';
 
       setMessages((prev) => [
         ...prev,
@@ -192,10 +185,10 @@ const ChatInterface = ({ selectedForComparison, onCompareToggle, messages, setMe
   };
 
   return (
-    <div className="h-full flex flex-col pb-24">
+    <div className="h-full flex flex-col relative">
       {/* Messages Container */}
       <div className="flex-1 overflow-y-auto px-4 py-6">
-        <div className="max-w-4xl mx-auto space-y-6">
+        <div className="max-w-4xl mx-auto space-y-6 pb-80">
           {messages.map((message, index) => (
             <div
               key={index}
@@ -277,10 +270,10 @@ const ChatInterface = ({ selectedForComparison, onCompareToggle, messages, setMe
       </div>
 
       {/* Fixed Input Area */}
-      <div className="fixed bottom-0 left-0 right-0 border-t bg-background/95 backdrop-blur-sm z-10">
-        <div className="max-w-4xl mx-auto px-4 py-3">
+      <div className="fixed bottom-0 left-0 right-0 border-t border-border/30" style={{ backgroundColor: '#ffffff' }}>
+        <div className="max-w-4xl mx-auto px-4 pb-4 pt-3">
           {/* Mode Toggle */}
-          <div className="flex gap-2 mb-3">
+          <div className="flex gap-2 mb-2">
             <button
               onClick={() => setSearchMode('ai')}
               className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors ${
@@ -307,177 +300,161 @@ const ChatInterface = ({ selectedForComparison, onCompareToggle, messages, setMe
 
           {/* Filter Panel */}
           {searchMode === 'filter' && (
-            <div className="mb-3 p-4 bg-muted/50 rounded-lg space-y-3">
-              {/* Keyword Search */}
-              <div>
-                <label className="block text-xs text-muted-foreground mb-1">Keyword</label>
-                <Input
-                  placeholder="Search in titles..."
-                  value={filterCriteria.keyword}
-                  onChange={(e) => handleFilterChange('keyword', e.target.value)}
-                  className="h-9"
-                />
-              </div>
-
-              {/* Price Range */}
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="block text-xs text-muted-foreground mb-1">
-                    Min Price {filterMetadata && `($${filterMetadata.priceRange.min.toLocaleString()})`}
-                  </label>
+            <div className="mb-2 space-y-2">
+              {/* Compact Main Filters */}
+              <div className="p-3 border border-border rounded-xl shadow-lg space-y-2" style={{ backgroundColor: '#ffffff' }}>
+                {/* Row 1: Location & Price Range */}
+                <div className="grid grid-cols-3 gap-2">
+                  <Select
+                    value={filterCriteria.location}
+                    onChange={(e) => handleFilterChange('location', e.target.value)}
+                    className="h-9 text-sm"
+                  >
+                    <option value="">Location</option>
+                    {filterMetadata?.locations.map((loc) => (
+                      <option key={loc} value={loc}>
+                        {loc}
+                      </option>
+                    ))}
+                  </Select>
                   <Input
                     type="number"
-                    placeholder={filterMetadata ? `$${filterMetadata.priceRange.min.toLocaleString()}` : '$0'}
+                    placeholder="Min Price"
                     value={filterCriteria.minPrice}
                     onChange={(e) => handleFilterChange('minPrice', e.target.value)}
-                    className="h-9"
-                    min={filterMetadata?.priceRange.min}
+                    className="h-9 text-sm"
                   />
-                </div>
-                <div>
-                  <label className="block text-xs text-muted-foreground mb-1">
-                    Max Price {filterMetadata && `($${filterMetadata.priceRange.max.toLocaleString()})`}
-                  </label>
                   <Input
                     type="number"
-                    placeholder={filterMetadata ? `$${filterMetadata.priceRange.max.toLocaleString()}` : 'Any'}
+                    placeholder="Max Price"
                     value={filterCriteria.maxPrice}
                     onChange={(e) => handleFilterChange('maxPrice', e.target.value)}
-                    className="h-9"
-                    max={filterMetadata?.priceRange.max}
+                    className="h-9 text-sm"
                   />
                 </div>
-              </div>
 
-              {/* Bedrooms */}
-              <div>
-                <label className="block text-xs text-muted-foreground mb-1">Bedrooms</label>
-                <div className="flex items-center gap-2">
+                {/* Row 2: Bedrooms & Bathrooms */}
+                <div className="grid grid-cols-2 gap-2">
                   <Select
                     value={filterCriteria.bedrooms}
                     onChange={(e) => handleFilterChange('bedrooms', e.target.value)}
-                    className="h-9 flex-1"
+                    className="h-9 text-sm"
                   >
-                    <option value="">Any</option>
+                    <option value="">Bedrooms</option>
                     {filterMetadata?.bedrooms.map((num) => (
                       <option key={num} value={num}>
-                        {num}
+                        {num}+ beds
                       </option>
                     ))}
                   </Select>
-                  <label className="flex items-center gap-1.5 text-xs text-muted-foreground whitespace-nowrap">
-                    <Checkbox
-                      checked={filterCriteria.minBedrooms}
-                      onChange={(e) => handleFilterChange('minBedrooms', e.target.checked)}
-                    />
-                    At least
-                  </label>
-                </div>
-              </div>
-
-              {/* Bathrooms */}
-              <div>
-                <label className="block text-xs text-muted-foreground mb-1">Bathrooms</label>
-                <div className="flex items-center gap-2">
                   <Select
                     value={filterCriteria.bathrooms}
                     onChange={(e) => handleFilterChange('bathrooms', e.target.value)}
-                    className="h-9 flex-1"
+                    className="h-9 text-sm"
                   >
-                    <option value="">Any</option>
+                    <option value="">Bathrooms</option>
                     {filterMetadata?.bathrooms.map((num) => (
                       <option key={num} value={num}>
-                        {num}
+                        {num}+ baths
                       </option>
                     ))}
                   </Select>
-                  <label className="flex items-center gap-1.5 text-xs text-muted-foreground whitespace-nowrap">
-                    <Checkbox
-                      checked={filterCriteria.minBathrooms}
-                      onChange={(e) => handleFilterChange('minBathrooms', e.target.checked)}
-                    />
-                    At least
-                  </label>
                 </div>
-              </div>
 
-              {/* Location */}
-              <div>
-                <label className="block text-xs text-muted-foreground mb-1">Location</label>
-                <Select
-                  value={filterCriteria.location}
-                  onChange={(e) => handleFilterChange('location', e.target.value)}
+                {/* Advanced Filters Toggle */}
+                <button
+                  onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                  className="flex items-center justify-center gap-1 w-full py-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  <option value="">Any</option>
-                  {filterMetadata?.locations.map((loc) => (
-                    <option key={loc} value={loc}>
-                      {loc}
-                    </option>
-                  ))}
-                </Select>
-              </div>
+                  {showAdvancedFilters ? (
+                    <>
+                      <ChevronUp className="w-3 h-3" />
+                      Less filters
+                    </>
+                  ) : (
+                    <>
+                      <ChevronDown className="w-3 h-3" />
+                      More filters
+                    </>
+                  )}
+                </button>
 
-              {/* Property Type */}
-              <div>
-                <label className="block text-xs text-muted-foreground mb-1">Property Type</label>
-                <Select
-                  value={filterCriteria.property_type}
-                  onChange={(e) => handleFilterChange('property_type', e.target.value)}
-                >
-                  <option value="">Any</option>
-                  {filterMetadata?.propertyTypes.map((type) => (
-                    <option key={type} value={type}>
-                      {type}
-                    </option>
-                  ))}
-                </Select>
-              </div>
+                {/* Advanced Filters (Collapsible) */}
+                {showAdvancedFilters && (
+                  <div className="space-y-2 pt-2 border-t border-border/50">
+                    <Input
+                      placeholder="Search keywords..."
+                      value={filterCriteria.keyword}
+                      onChange={(e) => handleFilterChange('keyword', e.target.value)}
+                      className="h-9 text-sm"
+                    />
+                    <Select
+                      value={filterCriteria.property_type}
+                      onChange={(e) => handleFilterChange('property_type', e.target.value)}
+                      className="h-9 text-sm"
+                    >
+                      <option value="">Property Type</option>
+                      {filterMetadata?.propertyTypes.map((type) => (
+                        <option key={type} value={type}>
+                          {type}
+                        </option>
+                      ))}
+                    </Select>
+                  </div>
+                )}
 
-              {/* Action Buttons */}
-              <div className="flex gap-2 pt-1">
-                <Button
-                  onClick={handleClearFilters}
-                  variant="outline"
-                  className="flex-1"
-                  disabled={isLoading}
-                >
-                  Clear
-                </Button>
-                <Button onClick={handleFilterSubmit} className="flex-1" disabled={isLoading}>
-                  {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Search'}
-                </Button>
+                {/* Action Buttons */}
+                <div className="flex gap-2 pt-1">
+                  <Button
+                    onClick={handleClearFilters}
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 h-9 text-sm"
+                    disabled={isLoading}
+                  >
+                    Clear
+                  </Button>
+                  <Button
+                    onClick={handleFilterSubmit}
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 h-9 text-sm"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Search'}
+                  </Button>
+                </div>
               </div>
             </div>
           )}
 
           {/* Chat Input (AI Mode) */}
           {searchMode === 'ai' && (
-            <div className="flex gap-2">
-              <Textarea
-                placeholder="Describe your dream home..."
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyPress={handleKeyPress}
-                disabled={isLoading}
-                className="min-h-[56px] max-h-[120px] resize-none rounded-3xl"
-                rows={1}
-              />
-              <Button
-                onClick={handleSend}
-                disabled={isLoading || !input.trim()}
-                className="self-end h-[56px] w-[56px] rounded-full"
-                size="icon"
-              >
-                {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
-                <span className="sr-only">Send message</span>
-              </Button>
-            </div>
-          )}
-
-          {searchMode === 'ai' && (
-            <p className="text-xs text-center text-muted-foreground mt-2">
-              Press Enter to send, Shift+Enter for new line
-            </p>
+            <>
+              <div className="flex gap-2 border border-border rounded-3xl shadow-lg p-2" style={{ backgroundColor: '#ffffff' }}>
+                <Textarea
+                  placeholder="Describe your dream home..."
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  disabled={isLoading}
+                  className="min-h-[52px] max-h-[120px] resize-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent"
+                  rows={1}
+                />
+                <Button
+                  onClick={handleSend}
+                  disabled={isLoading || !input.trim()}
+                  className="self-end h-[52px] w-[52px] rounded-full flex-shrink-0"
+                  size="icon"
+                >
+                  {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
+                  <span className="sr-only">Send message</span>
+                </Button>
+              </div>
+              <p className="text-xs text-center text-muted-foreground mt-1.5">
+                Press Enter to send, Shift+Enter for new line
+              </p>
+            </>
           )}
         </div>
       </div>
