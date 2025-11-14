@@ -24,7 +24,7 @@ app.use(express.urlencoded({ extended: true }));
 // API Routes
 app.use('/api/chat', chatRoutes);
 app.use('/api/properties', propertyRoutes);
-app.use('/health', healthRoutes);
+app.use('/api/health', healthRoutes);
 
 // Swagger Documentation
 app.use(
@@ -57,7 +57,7 @@ const startServer = async () => {
     app.listen(PORT, () => {
       console.log(`🚀 Server running on http://localhost:${PORT}`);
       console.log(`📚 API Documentation: http://localhost:${PORT}/api-docs`);
-      console.log(`🏥 Health Check: http://localhost:${PORT}/health`);
+      console.log(`🏥 Health Check: http://localhost:${PORT}/api/health`);
     });
   } catch (error) {
     console.error('❌ Failed to start server:', error.message);

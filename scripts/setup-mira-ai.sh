@@ -68,8 +68,8 @@ server {
     }
 
     # Health check endpoint
-    location /health {
-        proxy_pass http://localhost:${HOST_PORT}/health;
+    location /api/health {
+        proxy_pass http://localhost:${HOST_PORT}/api/health;
         access_log off;
     }
 
@@ -199,7 +199,7 @@ echo ""
 echo -e "${YELLOW}Check Status:${NC}"
 echo -e "  docker ps | grep ${CONTAINER_NAME}"
 echo -e "  docker logs -f ${CONTAINER_NAME}"
-echo -e "  curl http://localhost:${HOST_PORT}/health"
+echo -e "  curl http://localhost:${HOST_PORT}/api/health"
 echo ""
 echo -e "${YELLOW}Important:${NC}"
 echo -e "  Make sure /home/ubuntu/mira-ai/.env exists with:"

@@ -114,7 +114,7 @@ export const healthAPI = {
    */
   checkHealth: async () => {
     try {
-      const response = await fetch('/health');
+      const response = await fetch('/api/health');
       const data = await response.json();
       return { status: response.ok ? 'healthy' : 'unhealthy', data };
     } catch (error) {
