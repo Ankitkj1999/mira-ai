@@ -19,6 +19,7 @@ function App() {
   ]);
   const [healthStatus, setHealthStatus] = useState('checking'); // 'healthy', 'unhealthy', 'checking'
 
+  
   // Check health status on mount and every 30 seconds
   useEffect(() => {
     const checkHealth = async () => {
