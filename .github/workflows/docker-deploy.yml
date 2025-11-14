@@ -113,7 +113,7 @@ jobs:
             --restart unless-stopped \
             -p $APP_PORT:3001 \
             -v /home/ubuntu/mira-ai/data:/app/data \
-            -e NODE_ENV=production \
+            --env-file /home/ubuntu/mira-ai/.env \
             $DOCKER_USERNAME/$IMAGE_NAME:latest
           
           # Clean up old images
