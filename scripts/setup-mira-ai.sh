@@ -74,7 +74,7 @@ server {
     }
 
     # API endpoints
-    location /api {
+    location ^~ /api {
         proxy_pass http://localhost:${HOST_PORT}/api;
         proxy_http_version 1.1;
         proxy_set_header Upgrade \$http_upgrade;
