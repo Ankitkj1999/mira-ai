@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Bed, Bath, Maximize, MapPin } from 'lucide-react';
 
+
 const PropertyCard = ({ property, onCompareToggle, isSelected }) => {
   const formatPrice = (price) => {
     return new Intl.NumberFormat('en-US', {
