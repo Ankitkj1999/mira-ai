@@ -19,6 +19,7 @@ npm-debug.log*
 # IDE files
 .vscode/
 .idea/
+.qoder
 
 # System files
 .DS_Store
