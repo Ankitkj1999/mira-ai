@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -6,13 +6,14 @@ import { Bed, Bath, Maximize, MapPin } from 'lucide-react';
 
 
 const PropertyCard = ({ property, onCompareToggle, isSelected }) => {
-  const formatPrice = (price) => {
+  // Memoize price formatting to avoid recalculation on every render
+  const formattedPrice = useMemo(() => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 0,
-    }).format(price);
-  };
+    }).format(property.price);
+  }, [property.price]);
 
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5 h-full flex flex-col">
@@ -22,6 +23,7 @@ const PropertyCard = ({ property, onCompareToggle, isSelected }) => {
           src={property.image_url || 'https://placehold.co/600x400/EEE/31343C?font=montserrat&text=No+Image'}
           alt={property.title}
           className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+          loading="lazy"
           onError={(e) => {
             e.target.src = 'https://placehold.co/600x400/EEE/31343C?font=montserrat&text=No+Image';
           }}
@@ -53,7 +55,7 @@ const PropertyCard = ({ property, onCompareToggle, isSelected }) => {
 
         <CardContent className="pb-3 flex-1">
           {/* Price */}
-          <div className="text-lg font-bold text-primary mb-2">{formatPrice(property.price)}</div>
+          <div className="text-lg font-bold text-primary mb-2">{formattedPrice}</div>
 
           {/* Property Details */}
           <div className="grid grid-cols-3 gap-2 mb-3">
@@ -106,4 +108,5 @@ const PropertyCard = ({ property, onCompareToggle, isSelected }) => {
   );
 };
 
-export default PropertyCard;
+// Memoize component to prevent unnecessary re-renders
+export default React.memo(PropertyCard);

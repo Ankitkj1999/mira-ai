@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import ChatInterface from '@/components/ChatInterface';
 import PropertyCard from '@/components/PropertyCard';
 import PropertyComparison from '@/components/PropertyComparison';
@@ -33,7 +33,8 @@ function App() {
     return () => clearInterval(interval);
   }, []);
 
-  const handleCompareToggle = (propertyId) => {
+  // Stabilize callback reference to prevent PropertyCard re-renders
+  const handleCompareToggle = useCallback((propertyId) => {
     setSelectedForComparison((prev) => {
       if (prev.includes(propertyId)) {
         return prev.filter((id) => id !== propertyId);
@@ -45,7 +46,7 @@ function App() {
         return [...prev, propertyId];
       }
     });
-  };
+  }, []);
 
   const handleCompare = async () => {
     if (selectedForComparison.length < 2) {

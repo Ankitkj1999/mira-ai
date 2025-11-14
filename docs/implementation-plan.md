@@ -634,6 +634,59 @@ const embedding = await embeddingService.generateEmbedding(description);
 - [ ] Update prompt to guide AI on when to use tools
 - [ ] Test with complex multi-constraint queries
 
+### Step 8.1.1: AI-Enhanced Filter Search (Smart Filter Extraction) 🧠
+**Problem**: Users in "Filter Search" mode must manually select each filter option, even when entering natural language queries.
+
+**Solution**: Enhance the Filter Search mode with AI-powered query parsing:
+- [ ] Add AI preprocessing layer before traditional filter form
+- [ ] Parse natural language queries to extract filter criteria
+- [ ] Auto-populate filter form fields based on AI extraction
+- [ ] Generate structured JSON payload from user's search query
+- [ ] Example workflow:
+  ```
+  User enters: "Show me affordable 2-bedroom apartments in Brooklyn"
+  
+  AI extracts and returns:
+  {
+    "bedrooms": 2,
+    "property_type": "Apartment",
+    "location": "Brooklyn",
+    "maxPrice": 500000  // inferred from "affordable"
+  }
+  
+  Frontend:
+  - Auto-fills filter form dropdowns
+  - User can review/adjust before submitting
+  - Or directly submit extracted filters
+  ```
+
+**Benefits**:
+- Best of both worlds: Natural language + structured filtering
+- Users can type freely and see filters auto-populated
+- Maintains transparency (users see what filters are applied)
+- Reduces manual dropdown selection effort
+- More accurate results than pure vector similarity
+
+**Implementation Steps**:
+- [ ] Create new endpoint: `POST /api/chat/parse-filters`
+- [ ] Implement Gemini prompt for filter extraction:
+  - Input: User's natural language query
+  - Output: Structured JSON with filter fields
+  - Handle partial matches and inference (e.g., "affordable" → price range)
+- [ ] Update ChatInterface.jsx Filter mode:
+  - Add "Smart Search" toggle or auto-parse on input
+  - Call parse-filters endpoint when user types query
+  - Auto-populate Select/Input components with extracted values
+  - Show visual feedback (e.g., "AI detected: 2 bedrooms, Apartment...")
+- [ ] Allow user to:
+  - Accept AI suggestions and submit
+  - Modify extracted filters manually
+  - Clear and start over
+- [ ] Test with various query patterns:
+  - Price terms: "cheap", "luxury", "under $500k"
+  - Location variations: "NYC", "New York City", "Manhattan"
+  - Ambiguous queries: "family home" → 3+ bedrooms, House/Villa
+
 ### Step 8.2: Conversational Memory & Follow-up Questions
 - [ ] Implement conversation history tracking
 - [ ] Allow follow-up queries ("Show me cheaper options", "What about 4 bedrooms?")
