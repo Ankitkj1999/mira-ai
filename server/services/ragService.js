@@ -91,6 +91,74 @@ Highlight the most relevant properties and explain why they match the user's nee
 };
 
 /**
+ * Extract structured filters from natural language query using LLM
+ * @param {string} userMessage - User's natural language query
+ * @returns {Promise<Object>} - Extracted filters
+ */
+const extractFilters = async (userMessage) => {
+  try {
+    const prompt = `Extract property search filters from this query. Return ONLY a valid JSON object with these fields (omit fields if not mentioned):
+- minPrice: number (minimum price)
+- maxPrice: number (maximum price)
+- bedrooms: number (exact or minimum bedrooms)
+- bathrooms: number (exact or minimum bathrooms)
+- location: string (city or state)
+- property_type: string (Apartment, Condo, Villa, House, etc.)
+
+Query: "${userMessage}"
+
+Examples:
+"Properties under 1000000" -> {"maxPrice": 1000000}
+"3 bedroom apartments in Boston" -> {"bedrooms": 3, "location": "Boston", "property_type": "Apartment"}
+"Houses over 500k with 4 beds" -> {"minPrice": 500000, "bedrooms": 4, "property_type": "House"}
+
+Return only the JSON object, no other text:`;
+
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text().trim();
+    
+    // Extract JSON from response (handle markdown code blocks)
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      return JSON.parse(jsonMatch[0]);
+    }
+    return {};
+  } catch (error) {
+    console.error('⚠️ Error extracting filters:', error.message);
+    return {}; // Return empty filters on error
+  }
+};
+
+/**
+ * Apply filters to properties array
+ * @param {Array} properties - Properties to filter
+ * @param {Object} filters - Filter criteria
+ * @returns {Array} - Filtered properties
+ */
+const applyFilters = (properties, filters) => {
+  return properties.filter((property) => {
+    // Price filters
+    if (filters.minPrice && property.price < filters.minPrice) return false;
+    if (filters.maxPrice && property.price > filters.maxPrice) return false;
+    
+    // Bedroom filter
+    if (filters.bedrooms && property.bedrooms < filters.bedrooms) return false;
+    
+    // Bathroom filter
+    if (filters.bathrooms && property.bathrooms < filters.bathrooms) return false;
+    
+    // Location filter (case-insensitive partial match)
+    if (filters.location && !property.location.toLowerCase().includes(filters.location.toLowerCase())) return false;
+    
+    // Property type filter
+    if (filters.property_type && property.property_type !== filters.property_type) return false;
+    
+    return true;
+  });
+};
+
+/**
  * Main RAG pipeline: Process user message and return AI response with properties
  * @param {string} userMessage - User's natural language query
  * @returns {Promise<Object>} - AI response and relevant properties
@@ -99,18 +167,30 @@ const processUserMessage = async (userMessage) => {
   try {
     console.log('🔍 Processing user query:', userMessage);
 
-    // Step 1: Convert user query to embedding
+    // Step 1: Extract structured filters from query
+    const filters = await extractFilters(userMessage);
+    console.log('📋 Extracted filters:', filters);
+
+    // Step 2: Convert user query to embedding
     const queryEmbedding = await embeddingService.generateEmbedding(userMessage);
 
-    // Step 2: Perform vector search
-    const relevantProperties = await vectorSearch(queryEmbedding, 5);
+    // Step 3: Perform vector search (get more results to account for filtering)
+    const relevantProperties = await vectorSearch(queryEmbedding, 20);
 
-    // Step 3: Generate AI response with context
-    const aiResponse = await generateResponse(userMessage, relevantProperties);
+    // Step 4: Apply extracted filters to vector search results
+    const filteredProperties = Object.keys(filters).length > 0 
+      ? applyFilters(relevantProperties, filters)
+      : relevantProperties;
+
+    // Step 5: Take top 5 after filtering
+    const finalProperties = filteredProperties.slice(0, 5);
+
+    // Step 6: Generate AI response with context
+    const aiResponse = await generateResponse(userMessage, finalProperties);
 
     return {
       response: aiResponse,
-      properties: relevantProperties.map((p) => {
+      properties: finalProperties.map((p) => {
         const obj = p.toObject();
         delete obj.embedding;
         return obj;
@@ -126,4 +206,6 @@ module.exports = {
   vectorSearch,
   generateResponse,
   processUserMessage,
+  extractFilters,
+  applyFilters,
 };
