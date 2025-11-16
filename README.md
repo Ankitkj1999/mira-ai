@@ -10,6 +10,7 @@ Mira AI is an intelligent real estate chatbot that helps users find their dream 
 
 - [Implementation Plan](./docs/implementation-plan.md) - Detailed breakdown of project architecture, phases, and technical decisions
 - [Deployment Guide](./docs/deployment-guide.md) - Complete deployment documentation with CI/CD pipeline, architecture diagrams, and troubleshooting
+- [Search Architecture](./docs/search-architecture.md) - Hybrid RAG + filtering system explained with diagrams and test results
 
 ## ✨ Features
 
