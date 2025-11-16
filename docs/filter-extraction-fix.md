@@ -6,37 +6,42 @@ When users queried for properties with specific constraints (e.g., "Properties u
 - **LLM Response**: Correctly identified properties matching the criteria
 - **Properties Array**: Returned semantically similar properties that didn't match the numerical constraints
 
-### Example Issue
-Query: "Properties under 1000000"
-- LLM correctly listed properties under $1M in the text response
-- But the properties array included a $3.2M property as the first result
+### Example Issues
+1. Query: "Properties under 1000000"
+   - LLM correctly listed properties under $1M in the text response
+   - But the properties array included a $3.2M property as the first result
+
+2. Query: "Penthouse in Las Vegas"
+   - No results returned because strict property_type filter didn't match DB value
+
+3. Query: "Appartment in Atlanta" (typo)
+   - No results due to overly strict filtering
 
 ## Root Cause
 
-The RAG pipeline only used **vector similarity search**, which finds semantically similar property descriptions but doesn't understand numerical or categorical constraints like:
-- Price ranges (under/over X amount)
-- Exact bedroom/bathroom counts
-- Specific locations
-- Property types
+The RAG pipeline only used **vector similarity search**, which finds semantically similar property descriptions but doesn't understand numerical constraints like price ranges or bedroom counts.
 
 ## Solution
 
-Added a **two-step filtering approach**:
+Added a **hybrid filtering approach** that combines semantic search with numerical constraints:
 
-1. **Extract Structured Filters**: Use LLM to parse the natural language query and extract structured filters (price, bedrooms, location, etc.)
-2. **Apply Filters**: Filter the vector search results using the extracted constraints
+1. **Extract ONLY Numerical Filters**: Use LLM to parse explicit numerical constraints (price, bedrooms, bathrooms)
+2. **Let Semantic Search Handle the Rest**: Location and property type matching is handled by vector similarity
+3. **Apply Numerical Filters**: Filter vector search results using only the numerical constraints
 
 ### Implementation
 
 ```javascript
-// Step 1: Extract filters from natural language
+// Step 1: Extract ONLY numerical filters from natural language
 const filters = await extractFilters(userMessage);
-// Example: "Properties under 1000000" → {maxPrice: 1000000}
+// "Properties under 1000000" → {maxPrice: 1000000}
+// "Penthouse in Las Vegas" → {} (no numerical constraints)
+// "3 bedroom apartments" → {minBedrooms: 3}
 
-// Step 2: Vector search (get more results to account for filtering)
+// Step 2: Vector search (semantic matching for location/property type)
 const relevantProperties = await vectorSearch(queryEmbedding, 20);
 
-// Step 3: Apply extracted filters
+// Step 3: Apply ONLY numerical filters
 const filteredProperties = applyFilters(relevantProperties, filters);
 
 // Step 4: Return top 5 after filtering
@@ -45,10 +50,11 @@ const finalProperties = filteredProperties.slice(0, 5);
 
 ## Benefits
 
-✅ **Accurate Results**: Properties returned now match both semantic similarity AND explicit constraints
-✅ **Simple Implementation**: No complex NLP parsing, just LLM-based extraction
-✅ **Flexible**: Handles various query types (price ranges, bedrooms, locations, etc.)
-✅ **Backward Compatible**: Queries without filters still work using pure vector search
+✅ **Accurate Numerical Constraints**: Price and bedroom/bathroom filters are strictly enforced
+✅ **Flexible Semantic Search**: Location and property type matching uses vector similarity (handles typos, synonyms)
+✅ **Best of Both Worlds**: Combines precision of structured filters with flexibility of semantic search
+✅ **Robust to Typos**: "Appartment" still finds "Apartment" properties
+✅ **Property Type Flexibility**: "Penthouse" can match properties labeled as "Villa" if semantically similar
 
 ## Testing
 
@@ -65,19 +71,21 @@ node scripts/testMultipleQueries.js
 node scripts/testFilterExtraction.js
 ```
 
-## Supported Filters
+## Supported Filters (Numerical Only)
 
-- `minPrice` / `maxPrice`: Price range constraints
-- `bedrooms`: Minimum bedroom count
-- `bathrooms`: Minimum bathroom count
-- `location`: City or state (partial match)
-- `property_type`: Apartment, House, Villa, Condo, etc.
+- `minPrice` / `maxPrice`: Price range constraints (strict)
+- `minBedrooms`: Minimum bedroom count (strict)
+- `minBathrooms`: Minimum bathroom count (strict)
+
+**Note**: Location and property type are NOT extracted as filters - they're handled by semantic vector search for maximum flexibility.
 
 ## Example Queries
 
-| Query | Extracted Filters |
-|-------|------------------|
-| "Properties under 1000000" | `{maxPrice: 1000000}` |
-| "3 bedroom apartments in Boston" | `{bedrooms: 3, location: "Boston", property_type: "Apartment"}` |
-| "Houses over 500k with 4 beds" | `{minPrice: 500000, bedrooms: 4, property_type: "House"}` |
-| "Luxury properties with pool" | `{}` (semantic search only) |
+| Query | Extracted Filters | How It Works |
+|-------|------------------|--------------|
+| "Properties under 1000000" | `{maxPrice: 1000000}` | Strict price filter + semantic search |
+| "Penthouse in Las Vegas" | `{}` | Pure semantic search (finds "Sky Villa Duplex Penthouse") |
+| "Appartment in Atlanta" | `{}` | Pure semantic search (typo-tolerant) |
+| "3 bedroom apartments" | `{minBedrooms: 3}` | Bedroom filter + semantic search for "apartments" |
+| "Houses over 500k with 4 beds" | `{minPrice: 500000, minBedrooms: 4}` | Price + bedroom filters + semantic search for "houses" |
+| "Luxury properties with pool" | `{}` | Pure semantic search |

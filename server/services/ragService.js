@@ -92,25 +92,28 @@ Highlight the most relevant properties and explain why they match the user's nee
 
 /**
  * Extract structured filters from natural language query using LLM
+ * Only extract EXPLICIT numerical constraints, not semantic preferences
  * @param {string} userMessage - User's natural language query
  * @returns {Promise<Object>} - Extracted filters
  */
 const extractFilters = async (userMessage) => {
   try {
-    const prompt = `Extract property search filters from this query. Return ONLY a valid JSON object with these fields (omit fields if not mentioned):
-- minPrice: number (minimum price)
-- maxPrice: number (maximum price)
-- bedrooms: number (exact or minimum bedrooms)
-- bathrooms: number (exact or minimum bathrooms)
-- location: string (city or state)
-- property_type: string (Apartment, Condo, Villa, House, etc.)
+    const prompt = `Extract ONLY explicit numerical constraints from this query. Return a JSON object with these fields (omit if not explicitly mentioned):
+- minPrice: number (only if query says "over", "above", "more than" with a price)
+- maxPrice: number (only if query says "under", "below", "less than" with a price)
+- minBedrooms: number (only if query explicitly mentions bedroom count)
+- minBathrooms: number (only if query explicitly mentions bathroom count)
+
+IMPORTANT: 
+- Do NOT extract location or property_type - let semantic search handle those
+- Only extract if there's an EXPLICIT numerical constraint
+- "Penthouse in Las Vegas" -> {} (no numerical constraints)
+- "Apartment in Atlanta" -> {} (no numerical constraints)
+- "3 bedroom apartments" -> {"minBedrooms": 3}
+- "Properties under 1000000" -> {"maxPrice": 1000000}
+- "Houses over 500k with 4 beds" -> {"minPrice": 500000, "minBedrooms": 4}
 
 Query: "${userMessage}"
-
-Examples:
-"Properties under 1000000" -> {"maxPrice": 1000000}
-"3 bedroom apartments in Boston" -> {"bedrooms": 3, "location": "Boston", "property_type": "Apartment"}
-"Houses over 500k with 4 beds" -> {"minPrice": 500000, "bedrooms": 4, "property_type": "House"}
 
 Return only the JSON object, no other text:`;
 
@@ -131,28 +134,23 @@ Return only the JSON object, no other text:`;
 };
 
 /**
- * Apply filters to properties array
+ * Apply only numerical filters to properties array
+ * Semantic filters (location, property type) are handled by vector search
  * @param {Array} properties - Properties to filter
- * @param {Object} filters - Filter criteria
+ * @param {Object} filters - Filter criteria (only numerical)
  * @returns {Array} - Filtered properties
  */
 const applyFilters = (properties, filters) => {
   return properties.filter((property) => {
-    // Price filters
+    // Price filters (strict numerical constraints)
     if (filters.minPrice && property.price < filters.minPrice) return false;
     if (filters.maxPrice && property.price > filters.maxPrice) return false;
     
-    // Bedroom filter
-    if (filters.bedrooms && property.bedrooms < filters.bedrooms) return false;
+    // Bedroom filter (minimum count)
+    if (filters.minBedrooms && property.bedrooms < filters.minBedrooms) return false;
     
-    // Bathroom filter
-    if (filters.bathrooms && property.bathrooms < filters.bathrooms) return false;
-    
-    // Location filter (case-insensitive partial match)
-    if (filters.location && !property.location.toLowerCase().includes(filters.location.toLowerCase())) return false;
-    
-    // Property type filter
-    if (filters.property_type && property.property_type !== filters.property_type) return false;
+    // Bathroom filter (minimum count)
+    if (filters.minBathrooms && property.bathrooms < filters.minBathrooms) return false;
     
     return true;
   });
@@ -177,10 +175,14 @@ const processUserMessage = async (userMessage) => {
     // Step 3: Perform vector search (get more results to account for filtering)
     const relevantProperties = await vectorSearch(queryEmbedding, 20);
 
-    // Step 4: Apply extracted filters to vector search results
-    const filteredProperties = Object.keys(filters).length > 0 
+    // Step 4: Apply only numerical filters (if any) to vector search results
+    // Vector search already handles semantic matching for location/property type
+    const hasNumericalFilters = Object.keys(filters).length > 0;
+    const filteredProperties = hasNumericalFilters
       ? applyFilters(relevantProperties, filters)
       : relevantProperties;
+
+    console.log(`🔢 After filtering: ${filteredProperties.length} properties (from ${relevantProperties.length})`);
 
     // Step 5: Take top 5 after filtering
     const finalProperties = filteredProperties.slice(0, 5);
