@@ -688,10 +688,28 @@ const embedding = await embeddingService.generateEmbedding(description);
   - Ambiguous queries: "family home" → 3+ bedrooms, House/Villa
 
 ### Step 8.2: Conversational Memory & Follow-up Questions
-- [ ] Implement conversation history tracking
-- [ ] Allow follow-up queries ("Show me cheaper options", "What about 4 bedrooms?")
-- [ ] Context-aware responses based on previous interactions
-- [ ] Session management with conversation persistence
+**Problem**: Current chat treats each query independently, can't handle follow-ups like "What about cheaper ones?" or "Show me 4 bedrooms instead".
+
+**Solution**: Add conversation context to enable natural follow-up queries.
+
+**Implementation**:
+- [ ] Backend: Store conversation sessions with message history
+  - New model: `ConversationSession` (sessionId, messages array, timestamps)
+  - Update `ragService.js`: Accept conversation history, build context from last 5-10 messages
+  - Update chat route: Accept `conversationHistory` in request body
+- [ ] Frontend: Pass message history to API (already tracked in state)
+  - Modify `api.js`: Include `conversationHistory` in sendMessage()
+  - Optional: Add "Clear context" button to start fresh
+
+**Benefits**:
+- Follow-up queries work: "cheaper ones", "3 bedrooms", "most expensive"
+- Context-aware responses referencing previous results
+- More natural conversation flow
+
+**Optional Enhancements**:
+- Session persistence in MongoDB for returning users
+- Context summarization to manage token limits
+- Smart truncation (keep last N messages)
 
 ### Step 8.3: Advanced Property Insights
 - [ ] AI-generated property summaries highlighting key features

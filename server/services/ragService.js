@@ -88,7 +88,7 @@ Provide a clear, factual answer using **Markdown formatting**. Do NOT list indiv
  * @param {Array} properties - Relevant properties
  * @returns {Promise<string>} - AI-generated response
  */
-const generateResponse = async (userQuery, properties, totalMatches = null) => {
+const generateResponse = async (userQuery, properties, totalMatches = null, sortBy = null) => {
   try {
     // If no properties, provide helpful response
     if (properties.length === 0) {
@@ -125,9 +125,13 @@ Use **Markdown formatting** for a clear response.`;
       ? `Note: Showing ${properties.length} of ${totalMatches} total matching properties.`
       : `Note: Found ${properties.length} matching ${properties.length === 1 ? 'property' : 'properties'}.`;
 
+    const sortInfo = sortBy
+      ? `\nIMPORTANT: Properties are sorted ${sortBy === 'price_asc' ? 'from CHEAPEST to most expensive' : sortBy === 'price_desc' ? 'from MOST EXPENSIVE to cheapest' : sortBy === 'size_asc' ? 'from SMALLEST to largest' : 'from LARGEST to smallest'}. ${properties.length === 1 ? 'This is THE answer to the user\'s question.' : 'The FIRST property listed is the most relevant to the user\'s query.'}`
+      : '';
+
     const prompt = `You are a helpful real estate assistant. Based on the following properties, answer the user's question in a friendly and informative way.
 
-${countInfo}
+${countInfo}${sortInfo}
 
 Properties:
 ${context}
@@ -139,6 +143,7 @@ Provide a natural, conversational response using **Markdown formatting**:
 - Use bullet points (*) for listing amenities or features
 - Use headings (##) to organize by location or category when relevant
 - IMPORTANT: Mention the actual count (${totalMatches || properties.length} properties) if relevant to the query
+- If sorted, clearly highlight the FIRST property as the answer (e.g., "The cheapest property is...", "The most expensive is...")
 - Keep your response clear, concise, and well-structured
 
 Highlight the most relevant properties and explain why they match the user's needs.`;
@@ -166,7 +171,13 @@ const extractFilters = async (userMessage) => {
    - "informational" - Questions about property count, general info, comparisons (no property list needed)
    - "search" - User wants to see specific properties
 
-2. "filters": object with these fields (omit if not mentioned):
+2. "sortBy": one of (omit if not mentioned):
+   - "price_asc" - Cheapest first, lowest price, most affordable
+   - "price_desc" - Most expensive first, highest price, luxury
+   - "size_asc" - Smallest first
+   - "size_desc" - Largest first, biggest
+
+3. "filters": object with these fields (omit if not mentioned):
    - minPrice: number (e.g., "over 500k" -> 500000)
    - maxPrice: number (e.g., "under 1M" -> 1000000)
    - bedrooms: number (exact count, e.g., "3 bedrooms" -> 3)
@@ -176,9 +187,11 @@ const extractFilters = async (userMessage) => {
 
 Examples:
 - "How many properties do you have?" -> {"queryType": "informational", "filters": {}}
+- "Show me the cheapest property" -> {"queryType": "search", "sortBy": "price_asc", "filters": {}}
+- "What's the most expensive house?" -> {"queryType": "search", "sortBy": "price_desc", "filters": {"property_type": "House"}}
 - "Show me properties in Miami" -> {"queryType": "search", "filters": {"location": "Miami"}}
+- "Largest apartments in Brooklyn" -> {"queryType": "search", "sortBy": "size_desc", "filters": {"location": "Brooklyn", "property_type": "Apartment"}}
 - "3 bedroom apartments under 500k in Brooklyn" -> {"queryType": "search", "filters": {"bedrooms": 3, "maxPrice": 500000, "location": "Brooklyn", "property_type": "Apartment"}}
-- "What's the most expensive property?" -> {"queryType": "informational", "filters": {}}
 - "Penthouse in Las Vegas" -> {"queryType": "search", "filters": {"location": "Las Vegas", "property_type": "Penthouse"}}
 
 Query: "${userMessage}"
@@ -195,13 +208,39 @@ Return ONLY the JSON object, no other text:`;
       const parsed = JSON.parse(jsonMatch[0]);
       return {
         queryType: parsed.queryType || 'search',
+        sortBy: parsed.sortBy || null,
         filters: parsed.filters || {}
       };
     }
-    return { queryType: 'search', filters: {} };
+    return { queryType: 'search', sortBy: null, filters: {} };
   } catch (error) {
     console.error('⚠️ Error extracting filters:', error.message);
-    return { queryType: 'search', filters: {} }; // Default to search on error
+    return { queryType: 'search', sortBy: null, filters: {} }; // Default to search on error
+  }
+};
+
+/**
+ * Sort properties based on criteria
+ * @param {Array} properties - Properties to sort
+ * @param {string} sortBy - Sort criteria
+ * @returns {Array} - Sorted properties
+ */
+const sortProperties = (properties, sortBy) => {
+  if (!sortBy) return properties;
+
+  const sorted = [...properties];
+  
+  switch (sortBy) {
+    case 'price_asc':
+      return sorted.sort((a, b) => a.price - b.price);
+    case 'price_desc':
+      return sorted.sort((a, b) => b.price - a.price);
+    case 'size_asc':
+      return sorted.sort((a, b) => a.size_sqft - b.size_sqft);
+    case 'size_desc':
+      return sorted.sort((a, b) => b.size_sqft - a.size_sqft);
+    default:
+      return sorted;
   }
 };
 
@@ -311,9 +350,10 @@ const processUserMessage = async (userMessage) => {
   try {
     console.log('🔍 Processing user query:', userMessage);
 
-    // Step 1: Extract filters and determine query type
-    const { queryType, filters } = await extractFilters(userMessage);
+    // Step 1: Extract filters, query type, and sorting preference
+    const { queryType, sortBy, filters } = await extractFilters(userMessage);
     console.log('📋 Query type:', queryType);
+    console.log('📋 Sort by:', sortBy || 'none');
     console.log('📋 Extracted filters:', filters);
 
     // Step 2: Handle informational queries (no property listing needed)
@@ -374,11 +414,22 @@ const processUserMessage = async (userMessage) => {
       console.log(`🔢 Found ${relevantProperties.length} properties with direct filtering`);
     }
 
-    // Step 7: Return appropriate number of results
-    const finalProperties = relevantProperties.slice(0, Math.min(relevantProperties.length, 10));
+    // Step 7: Apply sorting if specified
+    if (sortBy) {
+      relevantProperties = sortProperties(relevantProperties, sortBy);
+      console.log(`🔄 Sorted by: ${sortBy}`);
+    }
 
-    // Step 8: Generate AI response with actual count
-    const aiResponse = await generateResponse(userMessage, finalProperties, relevantProperties.length);
+    // Step 8: Return appropriate number of results
+    // For superlative queries (cheapest/most expensive), return just 1
+    const limit = sortBy && (sortBy.includes('price_asc') || sortBy.includes('price_desc')) && !hasFilters
+      ? 1  // Just show the one property asked for
+      : Math.min(relevantProperties.length, 10); // Otherwise show up to 10
+    
+    const finalProperties = relevantProperties.slice(0, limit);
+
+    // Step 9: Generate AI response with actual count
+    const aiResponse = await generateResponse(userMessage, finalProperties, relevantProperties.length, sortBy);
 
     return {
       response: aiResponse,
