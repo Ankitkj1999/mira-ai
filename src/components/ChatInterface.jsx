@@ -280,8 +280,8 @@ const ChatInterface = ({ selectedForComparison, onCompareToggle, messages, setMe
               onClick={() => setSearchMode('ai')}
               className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors ${
                 searchMode === 'ai'
-                  ? 'bg-muted text-foreground'
-                  : 'text-muted-foreground hover:text-foreground'
+                  ? 'bg-primary/10 text-primary border border-primary/20'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
               }`}
             >
               <MessageSquare className="w-4 h-4" />
@@ -291,8 +291,8 @@ const ChatInterface = ({ selectedForComparison, onCompareToggle, messages, setMe
               onClick={() => setSearchMode('filter')}
               className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors ${
                 searchMode === 'filter'
-                  ? 'bg-muted text-foreground'
-                  : 'text-muted-foreground hover:text-foreground'
+                  ? 'bg-primary/10 text-primary border border-primary/20'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
               }`}
             >
               <SlidersHorizontal className="w-4 h-4" />
