@@ -125,8 +125,26 @@ Use **Markdown formatting** for a clear response.`;
       ? `Note: Showing ${properties.length} of ${totalMatches} total matching properties.`
       : `Note: Found ${properties.length} matching ${properties.length === 1 ? 'property' : 'properties'}.`;
 
+    // Enhanced sort info messages for all sort types
+    const getSortInfo = (sortBy) => {
+      const sortMessages = {
+        'price_asc': 'from CHEAPEST to most expensive',
+        'price_desc': 'from MOST EXPENSIVE to cheapest',
+        'size_asc': 'from SMALLEST to largest',
+        'size_desc': 'from LARGEST to smallest',
+        'bedrooms_asc': 'by FEWEST BEDROOMS first',
+        'bedrooms_desc': 'by MOST BEDROOMS first',
+        'bathrooms_asc': 'by FEWEST BATHROOMS first',
+        'bathrooms_desc': 'by MOST BATHROOMS first',
+        'value_asc': 'by BEST VALUE (lowest price per square foot)',
+        'amenities_asc': 'by FEWEST AMENITIES first',
+        'amenities_desc': 'by MOST AMENITIES first'
+      };
+      return sortMessages[sortBy] || '';
+    };
+
     const sortInfo = sortBy
-      ? `\nIMPORTANT: Properties are sorted ${sortBy === 'price_asc' ? 'from CHEAPEST to most expensive' : sortBy === 'price_desc' ? 'from MOST EXPENSIVE to cheapest' : sortBy === 'size_asc' ? 'from SMALLEST to largest' : 'from LARGEST to smallest'}. ${properties.length === 1 ? 'This is THE answer to the user\'s question.' : 'The FIRST property listed is the most relevant to the user\'s query.'}`
+      ? `\nIMPORTANT: Properties are sorted ${getSortInfo(sortBy)}. ${properties.length === 1 ? 'This is THE answer to the user\'s question.' : 'The FIRST property listed is the most relevant to the user\'s query.'}`
       : '';
 
     const prompt = `You are a helpful real estate assistant. Based on the following properties, answer the user's question in a friendly and informative way.
@@ -172,10 +190,17 @@ const extractFilters = async (userMessage) => {
    - "search" - User wants to see specific properties
 
 2. "sortBy": one of (omit if not mentioned):
-   - "price_asc" - Cheapest first, lowest price, most affordable
-   - "price_desc" - Most expensive first, highest price, luxury
-   - "size_asc" - Smallest first
-   - "size_desc" - Largest first, biggest
+   - "price_asc" - Cheapest, most affordable, lowest price, budget, economical
+   - "price_desc" - Most expensive, highest price, luxury, premium, priciest
+   - "size_asc" - Smallest, compact, cozy, tiny, minimum space
+   - "size_desc" - Largest, biggest, most space, spacious, roomy, maximum carpet area
+   - "bedrooms_asc" - Fewest bedrooms, minimum bedrooms, smallest family, studio alternative
+   - "bedrooms_desc" - Most bedrooms, maximum bedrooms, biggest family, largest family home
+   - "bathrooms_asc" - Fewest bathrooms, minimum bathrooms
+   - "bathrooms_desc" - Most bathrooms, maximum bathrooms
+   - "value_asc" - Best value, cost effective, cheapest per sqft, best deal, maximum value
+   - "amenities_asc" - Fewest amenities, minimal features, basic property
+   - "amenities_desc" - Most amenities, fully featured, best facilities, maximum features
 
 3. "filters": object with these fields (omit if not mentioned):
    - minPrice: number (e.g., "over 500k" -> 500000)
@@ -191,8 +216,17 @@ Examples:
 - "What's the most expensive house?" -> {"queryType": "search", "sortBy": "price_desc", "filters": {"property_type": "House"}}
 - "Show me properties in Miami" -> {"queryType": "search", "filters": {"location": "Miami"}}
 - "Largest apartments in Brooklyn" -> {"queryType": "search", "sortBy": "size_desc", "filters": {"location": "Brooklyn", "property_type": "Apartment"}}
+- "Property with most bedrooms" -> {"queryType": "search", "sortBy": "bedrooms_desc", "filters": {}}
+- "Best value 3-bedroom apartment" -> {"queryType": "search", "sortBy": "value_asc", "filters": {"bedrooms": 3, "property_type": "Apartment"}}
+- "Most luxurious house in Miami" -> {"queryType": "search", "sortBy": "price_desc", "filters": {"location": "Miami", "property_type": "House"}}
+- "Property with most amenities in Brooklyn" -> {"queryType": "search", "sortBy": "amenities_desc", "filters": {"location": "Brooklyn"}}
 - "3 bedroom apartments under 500k in Brooklyn" -> {"queryType": "search", "filters": {"bedrooms": 3, "maxPrice": 500000, "location": "Brooklyn", "property_type": "Apartment"}}
 - "Penthouse in Las Vegas" -> {"queryType": "search", "filters": {"location": "Las Vegas", "property_type": "Penthouse"}}
+- "Biggest family home in Miami" -> {"queryType": "search", "sortBy": "bedrooms_desc", "filters": {"location": "Miami"}}
+- "Most bathrooms" -> {"queryType": "search", "sortBy": "bathrooms_desc", "filters": {}}
+- "Most cost-effective 2-bedroom" -> {"queryType": "search", "sortBy": "value_asc", "filters": {"bedrooms": 2}}
+- "Fully featured apartment" -> {"queryType": "search", "sortBy": "amenities_desc", "filters": {"property_type": "Apartment"}}
+- "Basic property in Miami" -> {"queryType": "search", "sortBy": "amenities_asc", "filters": {"location": "Miami"}}
 
 Query: "${userMessage}"
 
@@ -231,14 +265,58 @@ const sortProperties = (properties, sortBy) => {
   const sorted = [...properties];
   
   switch (sortBy) {
+    // Price sorting
     case 'price_asc':
       return sorted.sort((a, b) => a.price - b.price);
     case 'price_desc':
       return sorted.sort((a, b) => b.price - a.price);
+    
+    // Size sorting
     case 'size_asc':
       return sorted.sort((a, b) => a.size_sqft - b.size_sqft);
     case 'size_desc':
       return sorted.sort((a, b) => b.size_sqft - a.size_sqft);
+    
+    // Bedroom sorting
+    case 'bedrooms_asc':
+      return sorted.sort((a, b) => a.bedrooms - b.bedrooms);
+    case 'bedrooms_desc':
+      return sorted.sort((a, b) => b.bedrooms - a.bedrooms);
+    
+    // Bathroom sorting
+    case 'bathrooms_asc':
+      return sorted.sort((a, b) => a.bathrooms - b.bathrooms);
+    case 'bathrooms_desc':
+      return sorted.sort((a, b) => b.bathrooms - a.bathrooms);
+    
+    // Calculated field: Price per square foot (best value = lowest $/sqft)
+    case 'value_asc': {
+      // Filter out properties with invalid size_sqft
+      const validProperties = sorted.filter(p => p.size_sqft && p.size_sqft > 0);
+      if (validProperties.length < sorted.length) {
+        console.warn(`⚠️ Filtered out ${sorted.length - validProperties.length} properties with invalid size_sqft`);
+      }
+      return validProperties.sort((a, b) => {
+        const valueA = a.price / a.size_sqft;
+        const valueB = b.price / b.size_sqft;
+        return valueA - valueB;
+      });
+    }
+    
+    // Calculated field: Amenity count
+    case 'amenities_desc':
+      return sorted.sort((a, b) => {
+        const countA = a.amenities ? a.amenities.length : 0;
+        const countB = b.amenities ? b.amenities.length : 0;
+        return countB - countA;
+      });
+    case 'amenities_asc':
+      return sorted.sort((a, b) => {
+        const countA = a.amenities ? a.amenities.length : 0;
+        const countB = b.amenities ? b.amenities.length : 0;
+        return countA - countB;
+      });
+    
     default:
       return sorted;
   }
@@ -420,11 +498,22 @@ const processUserMessage = async (userMessage) => {
       console.log(`🔄 Sorted by: ${sortBy}`);
     }
 
-    // Step 8: Return appropriate number of results
-    // For superlative queries (cheapest/most expensive), return just 1
-    const limit = sortBy && (sortBy.includes('price_asc') || sortBy.includes('price_desc')) && !hasFilters
-      ? 1  // Just show the one property asked for
-      : Math.min(relevantProperties.length, 10); // Otherwise show up to 10
+    // Step 8: Return appropriate number of results based on query type
+    // Superlative query detection:
+    // - Pure superlative (sortBy present, no filters or only property_type) -> return 1
+    // - Filtered superlative (sortBy present, has location/bedroom/bathroom filters) -> return 5
+    // - General search (no sortBy) -> return 10
+    const hasLocationOrRoomFilters = filters.location || filters.bedrooms || filters.bathrooms || filters.minPrice || filters.maxPrice;
+    const isPureSuperlative = sortBy && !hasLocationOrRoomFilters;
+    
+    let limit;
+    if (isPureSuperlative) {
+      limit = 1; // Pure superlative: "cheapest property", "most bedrooms"
+    } else if (sortBy && hasLocationOrRoomFilters) {
+      limit = Math.min(relevantProperties.length, 5); // Filtered superlative: "cheapest 3-bedroom in Miami"
+    } else {
+      limit = Math.min(relevantProperties.length, 10); // General search
+    }
     
     const finalProperties = relevantProperties.slice(0, limit);
 
